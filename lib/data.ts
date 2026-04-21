@@ -14,7 +14,7 @@ import type {
 // ── Personal Info ─────────────────────────────────────
 export const personalInfo = {
   name: 'Kaizen',
-  tagline: 'WEB DEVELOPER',
+  tagline: 'FULLSTACK DEVELOPER',
   positioning:
     'I help SaaS and fintech companies ship high-performance, conversion-optimised interfaces.',
   email: 'chiemeried321@gmail.com',
@@ -33,6 +33,8 @@ export const socialLinks: SocialLink[] = [
   { name: 'WhatsApp', url: 'https://api.whatsapp.com/send/?phone=2349117564724&text&type=phone_number&app_absent=0' },
   { name: 'Twitter', url: 'https://x.com/Indexter_1' },
 ];
+
+
 // ── Projects ──────────────────────────────────────────
 export const projects: Project[] = [
   {
