@@ -150,7 +150,7 @@ export default function AboutMe() {
           >
             <div className="relative aspect-square w-full max-w-sm rounded-2xl overflow-hidden shadow-2xl">
               <Image
-                src="/projects/images/ai-analytics-dashboard.jpg"
+                src="/projects/images/me.jpg"
                 alt="Kaizen — Frontend Architect"
                 fill
                 className="object-cover transition-transform duration-700 group-hover:scale-105"
