@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { experiences } from "@/lib/data";
-import { Briefcase, Calendar, MapPin } from "lucide-react";
+import { Briefcase, Calendar } from "lucide-react"; // Removed MapPin
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
@@ -70,7 +70,7 @@ export default function Experience() {
         </div>
 
         <div className="space-y-8">
-          {experiences.map((exp) => (   // ✅ removed unused 'idx' parameter
+          {experiences.map((exp) => (
             <div
               key={exp.id}
               className="exp-card relative bg-card/50 backdrop-blur-sm border border-border rounded-2xl p-6 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/5 hover:border-primary/30 hover:-translate-y-1"
