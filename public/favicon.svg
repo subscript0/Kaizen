@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <!-- Dark background pill -->
+  <rect width="32" height="32" rx="8" fill="#0B0F19"/>
+  <!-- K lettermark -->
+  <text x="5" y="24" font-family="system-ui, -apple-system, sans-serif"
+        font-size="22" font-weight="800" fill="#E5E7EB" letter-spacing="-1">K</text>
+  <!-- Blue accent dot -->
+  <circle cx="26" cy="8" r="4" fill="#2563EB"/>
+</svg>
