@@ -1,57 +1,41 @@
-'use client';
+"use client";
 
-import { useEffect, useRef } from 'react';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useEffect, useRef } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { experiences } from "@/lib/data";
+import { Briefcase, Calendar, MapPin } from "lucide-react";
 
-if (typeof window !== 'undefined') {
+if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
 }
 
-const experiences = [
-  {
-    id: 1,
-    duration: '2024 – Present',
-    company: 'Personal Projects / Freelance',
-    role: 'Frontend Engineer',
-    description:
-      'Building and refining frontend systems for web applications with a focus on performance, scalability, and clean architecture. Working independently on real-world projects, translating ideas into production-ready interfaces.',
-    highlights: [
-      'Developed responsive dashboards with dynamic data rendering and optimized state management',
-      'Improved load performance using code splitting, lazy loading, and asset optimization techniques',
-      'Designed reusable component structures to maintain consistency across multiple projects',
-    ],
-  },
-  {
-    id: 2,
-    duration: '2023 – 2024',
-    company: 'Self-Directed Learning / Projects',
-    role: 'UI Engineer',
-    description:
-      'Focused on mastering modern frontend development by building and iterating on multiple UI-heavy applications. Emphasis on design precision, usability, and developer workflow.',
-    highlights: [
-      'Built and deployed interactive web interfaces, including chat-style UIs and productivity tools',
-      'Achieved high performance and accessibility standards through testing and optimization',
-      'Created reusable UI components and documented them for scalability and reuse',
-    ],
-  },
-];
-
 export default function Experience() {
   const sectionRef = useRef<HTMLElement>(null);
+  const headerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      gsap.utils.toArray<HTMLElement>('.experience-item').forEach((item) => {
-        gsap.to(item, {
-          scrollTrigger: { trigger: item, start: 'top 85%' },
-          x: 0,
-          opacity: 1,
-          duration: 0.7,
-          ease: 'power3.out',
+      gsap.from(headerRef.current, {
+        scrollTrigger: { trigger: headerRef.current, start: "top 85%" },
+        y: 40,
+        opacity: 0,
+        duration: 0.8,
+        ease: "power3.out",
+      });
+
+      gsap.utils.toArray<HTMLElement>(".exp-card").forEach((card, i) => {
+        gsap.from(card, {
+          scrollTrigger: { trigger: card, start: "top 88%" },
+          y: 50,
+          opacity: 0,
+          duration: 0.6,
+          delay: i * 0.1,
+          ease: "back.out(0.6)",
         });
       });
     }, sectionRef);
+
     return () => ctx.revert();
   }, []);
 
@@ -59,48 +43,64 @@ export default function Experience() {
     <section
       ref={sectionRef}
       id="experience"
-      className="py-24 px-6 lg:px-12 max-w-7xl mx-auto"
+      className="relative py-24 md:py-32 px-6 md:px-12 overflow-hidden"
       aria-labelledby="experience-heading"
     >
-      <p className="section-number mb-4">Career</p>
-      <h2 id="experience-heading" className="section-title mb-16">
-        My Experience
-      </h2>
+      <div className="absolute inset-0 -z-10">
+        <div className="absolute top-1/3 left-0 w-80 h-80 bg-primary/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 right-0 w-80 h-80 bg-primary/5 rounded-full blur-3xl" />
+      </div>
 
-      <div className="flex flex-col gap-0">
-        {experiences.map((exp) => (
-          <article
-            key={exp.id}
-            className="experience-item grid grid-cols-1 md:grid-cols-[220px_1fr] gap-4 md:gap-12 py-8 border-b border-border/50 last:border-0"
+      <div className="max-w-5xl mx-auto">
+        <div ref={headerRef} className="text-center mb-16 md:mb-20">
+          <p className="text-primary text-sm font-semibold tracking-wider uppercase mb-3">
+            Career
+          </p>
+          <h2
+            id="experience-heading"
+            className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent"
           >
-            {/* Meta column */}
-            <div className="flex flex-col gap-1">
-              <p className="text-sm text-muted-foreground font-mono">{exp.duration}</p>
-              <p className="text-xs text-primary font-semibold tracking-widest uppercase mt-1">
-                {exp.company}
-              </p>
-            </div>
+            My Experience
+          </h2>
+          <div className="w-20 h-1 bg-gradient-to-r from-primary to-primary/40 rounded-full mx-auto mb-6" />
+          <p className="text-muted-foreground text-lg max-w-2xl mx-auto leading-relaxed">
+            Building and refining frontend systems with a focus on performance,
+            scalability, and clean architecture.
+          </p>
+        </div>
 
-            {/* Content column */}
-            <div>
-              <h3 className="text-lg font-semibold text-foreground mb-3">{exp.role}</h3>
-              <p className="text-muted-foreground leading-relaxed text-sm mb-5">
+        <div className="space-y-8">
+          {experiences.map((exp) => (   // ✅ removed unused 'idx' parameter
+            <div
+              key={exp.id}
+              className="exp-card relative bg-card/50 backdrop-blur-sm border border-border rounded-2xl p-6 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/5 hover:border-primary/30 hover:-translate-y-1"
+            >
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+                <div>
+                  <h3 className="text-2xl font-bold text-foreground">{exp.role}</h3>
+                  <div className="flex items-center gap-2 text-muted-foreground mt-1">
+                    <Briefcase className="w-4 h-4" />
+                    <span className="font-medium">{exp.company}</span>
+                    <span className="text-border">|</span>
+                    <Calendar className="w-4 h-4" />
+                    <span>{exp.duration}</span>
+                  </div>
+                </div>
+              </div>
+              <p className="text-muted-foreground leading-relaxed mb-4">
                 {exp.description}
               </p>
-              <ul className="flex flex-col gap-2.5">
-                {exp.highlights.map((h, j) => (
-                  <li key={j} className="flex items-start gap-3 text-sm text-muted-foreground">
-                    <span
-                      className="mt-2 w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0"
-                      aria-hidden="true"
-                    />
-                    {h}
+              <ul className="space-y-2">
+                {exp.highlights.map((highlight, idx) => (
+                  <li key={idx} className="flex items-start gap-2 text-sm text-muted-foreground">
+                    <span className="text-primary mt-1">▹</span>
+                    {highlight}
                   </li>
                 ))}
               </ul>
             </div>
-          </article>
-        ))}
+          ))}
+        </div>
       </div>
     </section>
   );

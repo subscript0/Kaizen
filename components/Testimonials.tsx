@@ -3,7 +3,7 @@ import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { testimonials } from '@/lib/data';
-import { User, Circle, X, Minimize2, Maximize2 } from 'lucide-react';
+import { User, X, Minimize2, Maximize2 } from 'lucide-react'; // removed Circle
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger);
@@ -23,7 +23,6 @@ const EditorBlock = ({ testimonial }: { testimonial: Testimonial }) => {
 
   return (
     <div className="rounded-lg overflow-hidden shadow-xl border border-gray-700 bg-[#1e1e1e] transition-all hover:shadow-2xl hover:border-gray-600">
-      {/* Window Title Bar */}
       <div className="flex items-center justify-between px-4 py-2 bg-[#2d2d2d] border-b border-gray-700">
         <div className="flex items-center gap-2">
           <div className="flex gap-1.5">
@@ -40,36 +39,24 @@ const EditorBlock = ({ testimonial }: { testimonial: Testimonial }) => {
         </div>
       </div>
 
-      {/* Editor Content */}
       <div className="flex font-mono text-sm">
-        {/* Line Numbers */}
         <div className="flex flex-col items-end px-3 py-4 bg-[#1e1e1e] text-gray-500 select-none border-r border-gray-800">
           {lines.map((_, idx) => (
-            <div key={idx} className="leading-6">
-              {idx + 1}
-            </div>
+            <div key={idx} className="leading-6">{idx + 1}</div>
           ))}
         </div>
-
-        {/* Code Area */}
         <pre className="flex-1 py-4 px-3 overflow-x-auto">
           <code className="text-gray-300 leading-6 whitespace-pre-wrap">
             {lines.map((line, idx) => (
               <div key={idx}>
-                {line.trim() === '' ? (
-                  <br />
-                ) : (
-                  <span className="text-[#9cdcfe]">{line}</span>
-                )}
+                {line.trim() === '' ? <br /> : <span className="text-[#9cdcfe]">{line}</span>}
               </div>
             ))}
-            {/* Add a cursor effect at the end */}
             <span className="inline-block w-2 h-4 bg-[#007acc] animate-pulse ml-0.5" />
           </code>
         </pre>
       </div>
 
-      {/* Status Bar */}
       <div className="flex items-center justify-between px-4 py-1.5 bg-[#007acc] text-white text-xs border-t border-[#007acc]">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5">
@@ -104,10 +91,7 @@ export default function Testimonials() {
     const ctx = gsap.context(() => {
       gsap.utils.toArray<HTMLElement>('.testimonial-card').forEach((card, i) => {
         gsap.from(card, {
-          scrollTrigger: {
-            trigger: card,
-            start: 'top 88%',
-          },
+          scrollTrigger: { trigger: card, start: 'top 88%' },
           y: 40,
           opacity: 0,
           duration: 0.8,
@@ -116,7 +100,6 @@ export default function Testimonials() {
         });
       });
     }, sectionRef);
-
     return () => ctx.revert();
   }, []);
 
@@ -131,7 +114,6 @@ export default function Testimonials() {
       <h2 id="testimonials-heading" className="section-title mb-16">
         What Clients Say
       </h2>
-
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {testimonials.map((t) => (
           <div key={t.id} className="testimonial-card">

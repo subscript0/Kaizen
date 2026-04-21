@@ -46,25 +46,17 @@ export default function HowIThink() {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // Header animation
       gsap.from(headerRef.current, {
-        scrollTrigger: {
-          trigger: headerRef.current,
-          start: "top 85%",
-        },
+        scrollTrigger: { trigger: headerRef.current, start: "top 85%" },
         y: 40,
         opacity: 0,
         duration: 0.8,
         ease: "power3.out",
       });
 
-      // Card animations
       gsap.utils.toArray<HTMLElement>(".approach-card").forEach((card, i) => {
         gsap.from(card, {
-          scrollTrigger: {
-            trigger: card,
-            start: "top 88%",
-          },
+          scrollTrigger: { trigger: card, start: "top 88%" },
           y: 50,
           opacity: 0,
           duration: 0.6,
@@ -84,14 +76,12 @@ export default function HowIThink() {
       className="relative py-24 md:py-32 px-6 md:px-12 overflow-hidden"
       aria-labelledby="approach-heading"
     >
-      {/* Background decoration */}
       <div className="absolute inset-0 -z-10">
         <div className="absolute top-1/3 right-0 w-80 h-80 bg-primary/5 rounded-full blur-3xl" />
         <div className="absolute bottom-1/4 left-0 w-80 h-80 bg-primary/5 rounded-full blur-3xl" />
       </div>
 
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
         <div ref={headerRef} className="text-center mb-16 md:mb-20">
           <p className="text-primary text-sm font-semibold tracking-wider uppercase mb-3">
             Philosophy
@@ -110,49 +100,36 @@ export default function HowIThink() {
           </p>
         </div>
 
-        {/* Cards grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {approaches.map((item, idx) => {
+          {approaches.map((item) => {
             const Icon = item.icon;
             return (
               <div
                 key={item.number}
                 className="approach-card group relative bg-card/50 backdrop-blur-sm border border-border rounded-2xl p-6 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/5 hover:border-primary/30 hover:-translate-y-1"
               >
-                {/* Number badge */}
                 <div className="absolute top-4 right-4 text-4xl font-black text-foreground/5 group-hover:text-foreground/10 transition-colors">
                   {item.number}
                 </div>
-
-                {/* Icon with gradient */}
                 <div
                   className={`w-12 h-12 rounded-xl bg-gradient-to-br ${item.gradient} p-2.5 mb-4 shadow-lg transition-transform group-hover:scale-110 duration-300`}
                 >
                   <Icon className="w-full h-full text-white" />
                 </div>
-
-                {/* Title */}
                 <h3 className="text-xl font-bold text-foreground mb-3 group-hover:text-primary transition-colors">
                   {item.title}
                 </h3>
-
-                {/* Description */}
                 <p className="text-muted-foreground text-sm leading-relaxed">
                   {item.body}
                 </p>
-
-                {/* Decorative line on hover */}
                 <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-gradient-to-r from-transparent via-primary to-transparent transition-all duration-300 group-hover:w-full" />
               </div>
             );
           })}
         </div>
 
-        {/* Optional: subtle callout */}
         <div className="mt-16 text-center">
-          <p className="text-xs text-muted-foreground font-mono">
-            — iterative, scalable, user-first —
-          </p>
+          <p className="text-xs text-muted-foreground font-mono">— kaizen —</p>
         </div>
       </div>
     </section>
