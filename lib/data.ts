@@ -14,14 +14,12 @@ import type {
 // ── Personal Info ─────────────────────────────────────
 export const personalInfo = {
   name: 'Kaizen',
-  tagline: 'FULLSTACK DEVEOPER',
+  tagline: 'FULL-STACK DEVELOPER',
   positioning:
     'I help SaaS and fintech companies ship high-performance, conversion-optimised interfaces.',
   email: 'chiemeried321@gmail.com',
   calendlyUrl: 'https://calendly.com/chiemeried321/30min', // Replace with your Calendly URL
-  // ========== CONTENTLAYER / SANITY PLACEHOLDER ==========
-  // To move to a CMS, replace these arrays with fetch() calls.
-  // Example: const projects = await sanityClient.fetch(groq`*[_type == "project"]`)  upworkUrl: 'https://www.upwork.com/freelancers/~01f6ce82d55eb7345d?mp_source=share', // Replace with your Upwork profile
+  upworkUrl: 'https://www.upwork.com/freelancers/~01f6ce82d55eb7345d?mp_source=share', // Replace with your Upwork profile
   stats: [
     { label: 'Years of Experience', value: '3+' },
     { label: 'Projects Shipped', value: '10+' },

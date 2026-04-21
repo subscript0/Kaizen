@@ -11,55 +11,49 @@ import { trackProjectView } from '@/lib/utils';
 if (typeof window !== 'undefined') gsap.registerPlugin(ScrollTrigger);
 
 export default function Projects() {
-  const sectionRef   = useRef<HTMLElement>(null);
-  // The outer wrapper moves via rAF (position only)
-  const wrapperRef   = useRef<HTMLDivElement>(null);
-  // The inner shell is what GSAP animates (opacity + scale only)
-  const shellRef     = useRef<HTMLDivElement>(null);
-
-  const mousePos     = useRef({ x: -9999, y: -9999 });
-  const curPos       = useRef({ x: -9999, y: -9999 });
-  const rafRef       = useRef<number>(0);
-  const isHovering   = useRef(false);
+  const sectionRef  = useRef<HTMLElement>(null);
+  const wrapperRef  = useRef<HTMLDivElement>(null);
+  const shellRef    = useRef<HTMLDivElement>(null);
+  const mousePos    = useRef({ x: -9999, y: -9999 });
+  const curPos      = useRef({ x: -9999, y: -9999 });
+  const rafRef      = useRef<number>(0);
+  const isHovering  = useRef(false);
 
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [isTouch,      setIsTouch]      = useState(false);
 
-  // Detect touch after hydration
   useEffect(() => {
     setIsTouch(window.matchMedia('(hover: none)').matches);
   }, []);
 
-  // Row entrance animations
+  // ── Row entrance animations ───────────────────────────────────────────────
   useEffect(() => {
     const ctx = gsap.context(() => {
       gsap.utils.toArray<HTMLElement>('.project-row').forEach((row, i) => {
         gsap.from(row, {
           scrollTrigger: { trigger: row, start: 'top 88%' },
-          y: 40, opacity: 0, duration: 0.75, delay: i * 0.07, ease: 'power3.out',
+          y: 40, opacity: 0, duration: 0.75, delay: i * 0.08, ease: 'power3.out',
         });
       });
     }, sectionRef);
     return () => ctx.revert();
   }, []);
 
-  // rAF loop — moves the outer wrapper only (no GSAP involvement)
+  // ── rAF mouse-follow ─────────────────────────────────────────────────────
   useEffect(() => {
     if (isTouch) return;
-
     const onMove = (e: MouseEvent) => {
       mousePos.current = { x: e.clientX, y: e.clientY };
     };
     window.addEventListener('mousemove', onMove);
 
     const tick = () => {
-      const lerp = isHovering.current ? 0.1 : 0.18;
+      const lerp = 0.1;
       curPos.current.x += (mousePos.current.x - curPos.current.x) * lerp;
       curPos.current.y += (mousePos.current.y - curPos.current.y) * lerp;
       if (wrapperRef.current) {
-        // Offset so image is above-right of cursor (classic tajmirul feel)
-        wrapperRef.current.style.left = `${curPos.current.x}px`;
-        wrapperRef.current.style.top  = `${curPos.current.y}px`;
+        wrapperRef.current.style.transform =
+          `translate(${curPos.current.x}px, ${curPos.current.y}px)`;
       }
       rafRef.current = requestAnimationFrame(tick);
     };
@@ -71,15 +65,17 @@ export default function Projects() {
     };
   }, [isTouch]);
 
-  // GSAP animates only the inner shell (opacity + scale)
-  // — never touches transform so no conflict with rAF
+  // ── Show / hide hover image ───────────────────────────────────────────────
   const handleEnter = (i: number) => {
     if (isTouch) return;
     isHovering.current = true;
     setHoveredIndex(i);
     if (shellRef.current) {
       gsap.killTweensOf(shellRef.current);
-      gsap.to(shellRef.current, { autoAlpha: 1, scale: 1, duration: 0.35, ease: 'power2.out' });
+      gsap.to(shellRef.current, {
+        opacity: 1, visibility: 'visible',
+        scale: 1, duration: 0.4, ease: 'power2.out',
+      });
     }
   };
 
@@ -89,7 +85,12 @@ export default function Projects() {
     setHoveredIndex(null);
     if (shellRef.current) {
       gsap.killTweensOf(shellRef.current);
-      gsap.to(shellRef.current, { autoAlpha: 0, scale: 0.85, duration: 0.3, ease: 'power2.in' });
+      gsap.to(shellRef.current, {
+        opacity: 0, scale: 0.88, duration: 0.3, ease: 'power2.in',
+        onComplete: () => {
+          if (shellRef.current) shellRef.current.style.visibility = 'hidden';
+        },
+      });
     }
   };
 
@@ -119,45 +120,46 @@ export default function Projects() {
             aria-label={`View ${project.title} case study`}
           >
             <div className="flex items-center justify-between py-7 border-b border-border/50 gap-6">
-              <span className="text-xs text-primary font-mono w-10 flex-shrink-0">{project.number}</span>
+              <span className="text-xs text-primary font-mono w-10 flex-shrink-0">
+                {project.number}
+              </span>
 
               <div className="flex-1 min-w-0">
                 <h3 className="text-2xl lg:text-3xl font-bold text-foreground group-hover:text-primary transition-colors duration-200 leading-tight">
                   {project.title}
                 </h3>
-                <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed max-w-xl
-                              opacity-0 max-h-0 group-hover:opacity-100 group-hover:max-h-10
-                              overflow-hidden transition-all duration-300">
+                <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed max-w-xl overflow-hidden
+                              opacity-0 max-h-0 group-hover:opacity-100 group-hover:max-h-12 transition-all duration-300">
                   {project.description}
                 </p>
               </div>
 
               <div className="flex flex-wrap gap-1.5 justify-end max-w-xs flex-shrink-0">
                 {project.techStack.slice(0, 3).map(tech => (
-                  <span key={tech} className="text-[11px] text-muted-foreground bg-muted/40 border border-border px-2 py-0.5 rounded-full">
+                  <span key={tech}
+                    className="text-[11px] text-muted-foreground bg-muted/40 border border-border px-2 py-0.5 rounded-full">
                     {tech}
                   </span>
                 ))}
               </div>
 
-              <span className="text-xl text-muted-foreground group-hover:text-primary group-hover:translate-x-2 transition-all duration-300 flex-shrink-0 ml-2" aria-hidden="true">
-                →
-              </span>
+              <span
+                className="text-xl text-muted-foreground group-hover:text-primary group-hover:translate-x-2 transition-all duration-300 flex-shrink-0 ml-2"
+                aria-hidden="true"
+              >→</span>
             </div>
           </Link>
         ))}
       </div>
 
-      {/* ── Cursor-follow image (desktop) ──
-          Outer wrapper: position only (rAF, no GSAP)
-          Inner shell:   opacity + scale only (GSAP, no position)        */}
+      {/* ── Cursor-follow image (fixed, desktop only) ── */}
       <div
         ref={wrapperRef}
-        className="fixed pointer-events-none z-[999]"
-        style={{ top: 0, left: 0, willChange: 'top, left' }}
+        className="fixed top-0 left-0 pointer-events-none z-[999]"
+        style={{ willChange: 'transform' }}
         aria-hidden="true"
       >
-        {/* -50% / -65% centres the card relative to cursor pos */}
+        {/* offset: centres card above-right of cursor tip */}
         <div style={{ transform: 'translate(-50%, -65%)' }}>
           <div
             ref={shellRef}
@@ -165,8 +167,8 @@ export default function Projects() {
             style={{
               opacity: 0,
               visibility: 'hidden',
-              scale: '0.85',
-              border: '1px solid hsl(var(--border))',
+              transform: 'scale(0.88)',  /* ← correct CSS, not the GSAP prop */
+              border: '1px solid rgba(255,255,255,0.08)',
             }}
           >
             {hoveredIndex !== null && projects[hoveredIndex] && (
@@ -180,10 +182,11 @@ export default function Projects() {
                   sizes="340px"
                   priority
                 />
-                {/* bottom gradient + label */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-3 flex items-center justify-between">
-                  <p className="text-xs font-semibold text-white">{projects[hoveredIndex].title}</p>
+                  <p className="text-xs font-semibold text-white">
+                    {projects[hoveredIndex].title}
+                  </p>
                   <span className="text-[10px] text-white/60 bg-white/10 px-2 py-0.5 rounded-full backdrop-blur-sm">
                     View →
                   </span>
@@ -201,7 +204,8 @@ export default function Projects() {
             key={project.id}
             href={`/projects/${project.slug}`}
             onClick={() => trackProjectView(project.slug)}
-            className="group block rounded-xl overflow-hidden border border-border bg-background-light hover:border-primary/50 transition-colors"
+            className="group block rounded-xl overflow-hidden border bg-background-light hover:border-primary/50 transition-all duration-300"
+            style={{ borderColor: 'hsl(var(--border))' }}
             aria-label={`View ${project.title}`}
           >
             <div className="relative aspect-video overflow-hidden">
@@ -218,13 +222,19 @@ export default function Projects() {
               </span>
             </div>
             <div className="p-3">
-              <h3 className="font-semibold text-foreground text-sm leading-snug mb-1.5 group-hover:text-primary transition-colors">
+              <h3 className="font-semibold text-sm leading-snug mb-1.5 group-hover:text-primary transition-colors"
+                style={{ color: 'hsl(var(--foreground))' }}>
                 {project.title}
               </h3>
-              <p className="text-[11px] text-muted-foreground leading-relaxed line-clamp-2">{project.description}</p>
+              <p className="text-[11px] leading-relaxed line-clamp-2"
+                style={{ color: 'hsl(var(--muted-foreground))' }}>
+                {project.description}
+              </p>
               <div className="flex flex-wrap gap-1 mt-2.5">
                 {project.techStack.slice(0, 2).map(tech => (
-                  <span key={tech} className="text-[10px] text-muted-foreground border border-border px-1.5 py-0.5 rounded-full">
+                  <span key={tech}
+                    className="text-[10px] border px-1.5 py-0.5 rounded-full"
+                    style={{ color: 'hsl(var(--muted-foreground))', borderColor: 'hsl(var(--border))' }}>
                     {tech}
                   </span>
                 ))}

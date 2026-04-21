@@ -10,6 +10,7 @@ import Preloader from '@/components/Preloader';
 import ParticleBackground from '@/components/ParticleBackground';
 import SmoothScroll from '@/components/SmoothScroll';
 import ThemeProvider from '@/components/ThemeProvider';
+import CursorTrail from '@/components/CursorTrail';
 import { personalInfo } from '@/lib/data';
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
@@ -84,6 +85,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <ParticleBackground />
             <ScrollProgress />
             <CustomCursor />
+            <CursorTrail />
             <StickyEmail />
             <Navbar />
             <main id="main-content" className="relative z-10">{children}</main>

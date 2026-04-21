@@ -10,7 +10,7 @@ if (typeof window !== 'undefined') {
 }
 
 interface Testimonial {
-  id: string;
+  id: number;
   content: string;
   name: string;
   role: string;
