@@ -113,9 +113,9 @@ export default function AboutMe() {
           <div ref={bioRef} className="space-y-5">
             <div className="space-y-4">
               <p className="text-muted-foreground leading-relaxed text-base">
-                I&apos;m a frontend architect with over 6 years of experience crafting
+                I'm a frontend architect with over 6 years of experience crafting
                 high-stakes dashboards, fintech portals, and AI-powered tools.
-                I don&apos;t just write code — I build systems that scale, perform,
+                I don't just write code — I build systems that scale, perform,
                 and delight users.
               </p>
               <p className="text-muted-foreground leading-relaxed text-base">
@@ -125,7 +125,7 @@ export default function AboutMe() {
                 user-centric design.
               </p>
               <p className="text-muted-foreground leading-relaxed text-base">
-                When I&apos;m not pushing pixels, I contribute to open-source,
+                When I'm not pushing pixels, I contribute to open-source,
                 mentor junior engineers, and explore the intersection of
                 generative AI and UI/UX.
               </p>

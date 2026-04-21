@@ -2,13 +2,11 @@
   "name": "kaizen-portfolio",
   "version": "1.0.0",
   "private": true,
-  "homepage": "https://<subscript0>.github.io/<Kaizen>",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "export": "next build && next export"
+    "lint": "next lint"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.1.1",

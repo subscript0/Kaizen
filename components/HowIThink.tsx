@@ -151,7 +151,7 @@ export default function HowIThink() {
         {/* Optional: subtle callout */}
         <div className="mt-16 text-center">
           <p className="text-xs text-muted-foreground font-mono">
-            — Kaizen —
+            — iterative, scalable, user-first —
           </p>
         </div>
       </div>

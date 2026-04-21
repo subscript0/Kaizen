@@ -1,4 +1,4 @@
-# Kaizen — FullStack Portfolio
+# Kaizen — Frontend Engineer Portfolio
 
 A conversion-focused portfolio built with **Next.js 15**, **Tailwind CSS**, and **GSAP** — targeting startup founders, SaaS companies, fintech teams, and AI tool builders.
 

@@ -151,7 +151,7 @@ export default function Banner() {
             transform: `translateX(${mousePosition.x * -0.2}px) translateY(${mousePosition.y * -0.1}px)`,
           }}
         >
-          FullStack
+          Website
           <br />
           <span className="relative inline-block">
             <span className="text-primary relative z-10">Developer</span>
