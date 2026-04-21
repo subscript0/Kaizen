@@ -151,7 +151,7 @@ export default function AboutMe() {
             <div className="relative aspect-square w-full max-w-sm rounded-2xl overflow-hidden shadow-2xl">
               <Image
                 src="/projects/images/me.jpg"
-                alt="Kaizen — Frontend Architect"
+                alt="Kaizen — Full-Stack Developer"
                 fill
                 className="object-cover transition-transform duration-700 group-hover:scale-105"
                 sizes="(max-width: 768px) 100vw, 400px"

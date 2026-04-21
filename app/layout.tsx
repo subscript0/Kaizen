@@ -30,11 +30,11 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website', locale: 'en_US', url: 'https://yourdomain.com',
     siteName: `${personalInfo.name} — Portfolio`,
-    title: `${personalInfo.name} — Frontend Engineer`,
+    title: `${personalInfo.name} — FullStack Developer`,
     description: personalInfo.positioning,
-    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: `${personalInfo.name} — Frontend Engineer Portfolio` }],
+    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: `${personalInfo.name} — FullStack Developer Portfolio` }],
   },
-  twitter: { card: 'summary_large_image', title: `${personalInfo.name} — Frontend Engineer`, description: personalInfo.positioning, images: ['/og-image.png'] },
+  twitter: { card: 'summary_large_image', title: `${personalInfo.name} — FullStack Developer`, description: personalInfo.positioning, images: ['/og-image.png'] },
   robots: { index: true, follow: true, googleBot: { index: true, follow: true, 'max-video-preview': -1, 'max-image-preview': 'large', 'max-snippet': -1 } },
 };
 
