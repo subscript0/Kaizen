@@ -2,8 +2,10 @@
   "name": "kaizen-portfolio",
   "version": "1.0.0",
   "private": true,
+  "homepage": "https://<your-username>.github.io/<repo-name>",
   "scripts": {
     "dev": "next dev",
+    "deploy": "next build "
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -34,4 +36,5 @@
     "tailwindcss": "^3.4.1",
     "typescript": "^5"
   }
+  
 }
