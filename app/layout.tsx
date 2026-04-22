@@ -16,7 +16,7 @@ import { personalInfo } from '@/lib/data';
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://yourdomain.com'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://mekaizen.vercel.app/'),
   title: { default: `${personalInfo.name} — FullStack Developer`, template: `%s | ${personalInfo.name}` },
   description: personalInfo.positioning,
   keywords: ['Frontend Engineer','React Developer','Next.js','SaaS','Fintech','AI Dashboard','TypeScript','Tailwind CSS'],
