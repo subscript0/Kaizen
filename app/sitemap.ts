@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next';
 import { projects } from '@/lib/data';
 
-const BASE_URL = 'https://yourdomain.com'; // Replace with your domain
+const BASE_URL = 'https://mekaizen.netlify.app'; // Replace with your domain
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const projectRoutes = projects.map((project) => ({
