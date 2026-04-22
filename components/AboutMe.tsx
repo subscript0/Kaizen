@@ -91,23 +91,25 @@ export default function AboutMe() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-start">
           <div ref={bioRef} className="space-y-5">
             <div className="space-y-4">
-              <p className="text-muted-foreground leading-relaxed text-base">
-                I&apos;m a frontend architect with over 6 years of experience crafting
-                high-stakes dashboards, fintech portals, and AI-powered tools.
-                I don&apos;t just write code — I build systems that scale, perform,
-                and delight users.
-              </p>
-              <p className="text-muted-foreground leading-relaxed text-base">
-                My philosophy is rooted in clean architecture, real-time data
-                integrity, and obsessive performance tuning. Every component I
-                ship is an investment in long-term maintainability and
-                user-centric design.
-              </p>
-              <p className="text-muted-foreground leading-relaxed text-base">
-                When I&apos;m not pushing pixels, I contribute to open-source,
-                mentor junior engineers, and explore the intersection of
-                generative AI and UI/UX.
-              </p>
+         <p className="text-muted-foreground leading-relaxed text-base">
+  I’m a full stack developer with around 5 years of experience building
+  web applications, dashboards, and system-driven interfaces. I work across
+  both frontend and backend, focusing on turning complex ideas into clean,
+  functional products without unnecessary complexity.
+</p>
+<p className="text-muted-foreground leading-relaxed text-base">
+  My work is centered on practical architecture, reusable components,
+  and reliable data flow between client and server. I care less about
+  trends and more about building systems that are stable, scalable,
+  and maintainable over time.
+</p>
+<p className="text-muted-foreground leading-relaxed text-base">
+  I spend a lot of time improving how I think about systems, API design,
+  and problem-solving. I’m also exploring the intersection of frontend
+  development, cybersecurity, and AI to better understand how modern
+  products are built and secured end-to-end.
+</p>
+
             </div>
 
             <div className="pt-4">
