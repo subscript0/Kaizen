@@ -13,7 +13,7 @@ export const personalInfo = {
   name: 'Your Name',
   tagline: 'YOUR ROLE',
   positioning: 'Your one-line value prop.',
-  email: 'you@yourdomain.com',
+  email: 'https://mekaizen.netlify.app/',
   calendlyUrl: 'https://calendly.com/yourname/30min',
   upworkUrl: 'https://www.upwork.com/freelancers/yourprofile',
   stats: [

@@ -17,7 +17,7 @@ const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://yourdomain.com'),
-  title: { default: `${personalInfo.name} — Frontend Engineer`, template: `%s | ${personalInfo.name}` },
+  title: { default: `${personalInfo.name} — FullStack Developer`, template: `%s | ${personalInfo.name}` },
   description: personalInfo.positioning,
   keywords: ['Frontend Engineer','React Developer','Next.js','SaaS','Fintech','AI Dashboard','TypeScript','Tailwind CSS'],
   authors: [{ name: personalInfo.name }],
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     apple: '/favicon-180.png',
   },
   openGraph: {
-    type: 'website', locale: 'en_US', url: 'https://yourdomain.com',
+    type: 'website', locale: 'en_US', url: 'https://mekaizen.netlify.app/',
     siteName: `${personalInfo.name} — Portfolio`,
     title: `${personalInfo.name} — FullStack Developer`,
     description: personalInfo.positioning,
