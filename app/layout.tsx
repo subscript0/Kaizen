@@ -16,7 +16,7 @@ import { personalInfo } from '@/lib/data';
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://mekaizen.vercel.app/'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://mekaizen.netlify.app/'),
   title: { default: `${personalInfo.name} — FullStack Developer`, template: `%s | ${personalInfo.name}` },
   description: personalInfo.positioning,
   keywords: ['Frontend Engineer','React Developer','Next.js','SaaS','Fintech','AI Dashboard','TypeScript','Tailwind CSS'],
@@ -41,7 +41,7 @@ export const metadata: Metadata = {
 const FLASH_SCRIPT = `(function(){try{
   var b=localStorage.getItem('theme-base')||'dark';
   var a=localStorage.getItem('theme-accent')||'blue';
-  var B={
+  var B={ 
     dark:{'--background':'222 20% 8%','--background-light':'222 18% 12%','--foreground':'220 13% 91%','--muted':'220 9% 20%','--muted-foreground':'220 9% 65%','--border':'220 13% 20%'},
     light:{'--background':'210 20% 97%','--background-light':'210 20% 92%','--foreground':'222 20% 10%','--muted':'210 20% 86%','--muted-foreground':'215 16% 46%','--border':'214 32% 82%'}
   };
