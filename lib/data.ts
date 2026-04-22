@@ -150,31 +150,32 @@ export const projects: Project[] = [
 export const experiences: Experience[] = [
   {
     id: 1,
-    company: 'Fintech Startup',
+    company: 'Personal Projects / Freelance',
     role: 'Frontend Engineer',
     duration: '2024 – Present',
     description:
-      'Leading frontend development for a B2B payment platform. Architecting component systems, optimising render performance, and collaborating directly with product and design.',
+      'Building and refining frontend systems for web applications with a focus on performance, scalability, and clean architecture. Working independently on real-world projects, translating ideas into production-ready interfaces.',
     highlights: [
-      'Built real-time transaction dashboard processing 50K+ events/day',
-      'Reduced initial bundle size by 42% through code splitting and lazy loading',
-      'Established frontend architecture patterns adopted across 3 product teams',
+      'Developed responsive dashboards with dynamic data rendering and optimized state management',
+      'Improved load performance using code splitting, lazy loading, and asset optimization techniques',
+      'Designed reusable component structures to maintain consistency across multiple projects',
     ],
   },
   {
     id: 2,
-    company: 'AI SaaS Platform',
+    company: 'Self-Directed Learning / Projects',
     role: 'UI Engineer',
     duration: '2023 – 2024',
     description:
-      'Shipped pixel-perfect interfaces for an AI productivity suite used by 10,000+ users. Focused on performance, accessibility, and developer experience.',
+      'Focused on mastering modern frontend development by building and iterating on multiple UI-heavy applications. Emphasis on design precision, usability, and developer workflow.',
     highlights: [
-      'Delivered AI chat interface from zero to launch in 8 weeks',
-      'Achieved Lighthouse scores of 95+ across all core pages',
-      'Built design system of 60+ components with full Storybook documentation',
+      'Built and deployed interactive web interfaces, including chat-style UIs and productivity tools',
+      'Achieved high performance and accessibility standards through testing and optimization',
+      'Created reusable UI components and documented them for scalability and reuse',
     ],
   },
 ];
+
 
 // ── Skills ────────────────────────────────────────────
 export const skills: SkillCategory[] = [
