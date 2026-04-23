@@ -20,7 +20,7 @@ export const personalInfo = {
   email: 'chiemeried321@gmail.com',
   calendlyUrl: 'https://calendly.com/chiemeried321/30min', // Replace with your Calendly URL
   upworkUrl: 'https://www.upwork.com/freelancers/~01f6ce82d55eb7345d?mp_source=share', // Replace with your Upwork profile
-  whatsappGroupUrl: 'https://chat.whatsapp.com/YOUR_GROUP_LINK', // ← replace with real link
+  whatsappGroupUrl: 'https://chat.whatsapp.com/DxS7V5kzZhC0WRyjwQXCCG', // ← replace with real link
   stats: [
     { label: 'Years of Experience', value: '3+' },
     { label: 'Projects Shipped', value: '10+' },
