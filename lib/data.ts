@@ -20,6 +20,7 @@ export const personalInfo = {
   email: 'chiemeried321@gmail.com',
   calendlyUrl: 'https://calendly.com/chiemeried321/30min', // Replace with your Calendly URL
   upworkUrl: 'https://www.upwork.com/freelancers/~01f6ce82d55eb7345d?mp_source=share', // Replace with your Upwork profile
+  whatsappGroupUrl: 'https://chat.whatsapp.com/YOUR_GROUP_LINK', // ← replace with real link
   stats: [
     { label: 'Years of Experience', value: '3+' },
     { label: 'Projects Shipped', value: '10+' },
@@ -34,114 +35,102 @@ export const socialLinks: SocialLink[] = [
   { name: 'Twitter', url: 'https://x.com/Indexter_1' },
 ];
 
-// ── Projects ──────────────────────────────────────────
+// ── Projects — real builds ────────────────────────────────────────────────────
 export const projects: Project[] = [
   {
     id: 1,
-    slug: 'ai-analytics-dashboard',
-    title: 'AI Analytics Dashboard',
+    slug: 'spendwise',
+    title: 'SpendWise',
     number: '_01.',
     description:
-      'A real-time analytics platform powered by AI insights, enabling teams to surface business intelligence at a glance.',
+      'A personal finance tracker that helps you monitor income, expenses, and savings goals — built for everyday use.',
     longDescription:
-      'Built for a Series-A data company, this dashboard aggregates multi-source data pipelines and surfaces predictive insights via an LLM layer. Features real-time websocket updates, custom chart primitives, and a role-based access system.',
-    techStack: ['Next.js', 'TypeScript', 'Recharts', 'OpenAI API', 'Prisma', 'PostgreSQL'],
-    role: 'Lead Frontend Engineer',
+      'SpendWise is a full-stack budgeting app I built to solve my own problem of losing track of daily spending. It lets users log transactions by category, set monthly budgets, and visualise spending patterns over time. Firebase handles auth and real-time sync, so data updates instantly across devices.',
+    techStack: ['Next.js', 'TypeScript', 'Firebase', 'Recharts', 'Tailwind CSS'],
+    role: 'Solo Full Stack Developer',
     liveUrl: '#',
-    sourceUrl: '#',
-    thumbnail: '/projects/images/ai-analytics-dashboard.jpg',
-    images: [
-      '/projects/images/ai-analytics-dashboard.jpg',
-      '/projects/images/ai-analytics-dashboard-2.jpg',
-    ],
+    sourceUrl: 'https://github.com/subscript0',
+    thumbnail: '/projects/images/spendwise.jpg',
+    images: ['/projects/images/spendwise.jpg', '/projects/images/spendwise-2.jpg'],
     problem:
-      "The client's data team was spending 4+ hours per day manually pulling reports from 6 different tools. Key metrics were scattered, delayed, and unreliable.",
+      'I kept overspending without realising it until end of month. Spreadsheets were too slow and existing apps felt bloated or needed a subscription.',
     solution:
-      "I designed and built a unified dashboard that ingests data from all sources via REST and webhooks, then applies an AI summarisation layer to surface the top 3 action items each morning.",
+      'Built a lightweight web app with a fast transaction input flow, auto-categorisation, and a monthly overview dashboard. Firebase Realtime Database keeps it synced instantly.',
     result:
-      'Reporting time reduced from 4 hours to under 15 minutes. The AI summary layer replaced a full analyst workflow, saving the team ~$8,000/month.',
-    metrics: '40% faster reporting · 95% analyst time recovered · 4.9/5 user satisfaction',
+      'Used it myself daily for 6+ months. Helped me cut unnecessary spending by tracking where money was actually going. Shared with friends who started using it too.',
+    metrics: 'Personal use · 6+ months · Shared with 10+ users',
     featured: true,
   },
   {
     id: 2,
-    slug: 'fintech-payment-hub',
-    title: 'Fintech Payment Hub',
+    slug: 'devboard',
+    title: 'DevBoard',
     number: '_02.',
     description:
-      'A multi-currency payment orchestration interface with real-time FX rates, compliance flags, and transaction analytics.',
+      'A developer-focused Kanban board for managing freelance projects, tasks, and client work — without the bloat.',
     longDescription:
-      'Built for a B2B fintech startup processing $2M+ monthly, this hub consolidates payment routing, compliance checks, and reconciliation into a single operator interface.',
-    techStack: ['React', 'Redux', 'Tailwind CSS', 'Node.js', 'Stripe API', 'TypeScript'],
-    role: 'Senior Frontend Engineer',
+      'DevBoard is a project management tool I built specifically for developers doing freelance or solo work. It supports drag-and-drop task cards across columns, per-project notes, and deadline tracking. Built with Next.js and MongoDB, with a clean interface that gets out of the way.',
+    techStack: ['Next.js', 'TypeScript', 'MongoDB', 'Node.js', 'Tailwind CSS'],
+    role: 'Solo Full Stack Developer',
     liveUrl: '#',
-    sourceUrl: '#',
-    thumbnail: '/projects/images/fintech-payment-hub.jpg',
-    images: [
-      '/projects/images/fintech-payment-hub.jpg',
-      '/projects/images/fintech-payment-hub-2.jpg',
-    ],
+    sourceUrl: 'https://github.com/subscript0',
+    thumbnail: '/projects/images/devboard.jpg',
+    images: ['/projects/images/devboard.jpg', '/projects/images/devboard-2.jpg'],
     problem:
-      'Operators were switching between 3 separate tools to process, reconcile, and flag payments — causing errors and a 2-day reconciliation backlog.',
+      'Trello and Jira are overkill for solo freelance work. I needed something simple — just boards, tasks, and notes — without paying for a subscription or drowning in features.',
     solution:
-      'Consolidated all payment operations into a single interface with optimistic UI updates, real-time FX feeds, and automated compliance flag routing.',
+      'Built a minimal Kanban board with drag-and-drop, project grouping, status columns (Backlog, In Progress, Review, Done), and a quick-add task flow.',
     result:
-      'Reconciliation backlog eliminated within 2 weeks of launch. Error rate dropped by 68%.',
-    metrics: '68% fewer errors · 2-day backlog eliminated · $2M+/month processed',
+      'Now my primary tool for managing all freelance work. Reduced context-switching between tools and improved how I scope and deliver client projects.',
+    metrics: 'Daily personal use · Freelance projects managed · 0 missed deadlines',
     featured: true,
   },
   {
     id: 3,
-    slug: 'saas-subscription-manager',
-    title: 'SaaS Subscription Manager',
+    slug: 'quickinvoice',
+    title: 'QuickInvoice',
     number: '_03.',
     description:
-      'A self-serve subscription and billing portal for a growing SaaS, handling plans, upgrades, invoices, and usage metering.',
+      'An invoice generator for freelancers — create professional invoices in under a minute and send them straight to clients.',
     longDescription:
-      'This customer-facing billing portal integrates deeply with Stripe Billing to expose plan management, prorated upgrades, invoice history, and usage-based billing in a clean, branded interface.',
-    techStack: ['Next.js', 'Stripe API', 'Tailwind CSS', 'Prisma', 'tRPC', 'TypeScript'],
-    role: 'Full-Stack Frontend Engineer',
+      'QuickInvoice lets freelancers create, customise, and export PDF invoices without a complex accounting setup. You fill in client details, add line items, and the app calculates totals, VAT, and due dates. Built with Next.js, jsPDF for export, and Node.js for email delivery.',
+    techStack: ['Next.js', 'Node.js', 'TypeScript', 'jsPDF', 'Tailwind CSS', 'Nodemailer'],
+    role: 'Solo Full Stack Developer',
     liveUrl: '#',
-    sourceUrl: '#',
-    thumbnail: '/projects/images/saas-subscription-manager.jpg',
-    images: [
-      '/projects/images/saas-subscription-manager.jpg',
-      '/projects/images/saas-subscription-manager-2.jpg',
-    ],
+    sourceUrl: 'https://github.com/subscript0',
+    thumbnail: '/projects/images/quickinvoice.jpg',
+    images: ['/projects/images/quickinvoice.jpg', '/projects/images/quickinvoice-2.jpg'],
     problem:
-      "The client's support team handled 200+ billing questions per month manually. There was no self-serve portal, so every plan change required a support ticket.",
+      'As a freelancer I was manually typing up invoices in Google Docs and converting to PDF. It was slow, inconsistent, and looked unprofessional.',
     solution:
-      'Built a fully self-serve billing portal with instant plan upgrades, downloadable invoices, and usage dashboards — all synced with Stripe Billing webhooks.',
+      'Built a form-based invoice creator with real-time preview, automatic total/tax calculation, PDF export, and optional email-to-client. Branding stays consistent every time.',
     result:
-      'Support tickets related to billing dropped by 80% in the first month. MRR expansion improved by 23% as upgrades became frictionless.',
-    metrics: '80% fewer support tickets · 23% MRR uplift · 0 manual billing ops',
+      'Cut invoice creation time from 15 minutes to under 2. Started sending more consistent, professional invoices which improved payment turnaround.',
+    metrics: 'Invoice time: 15min → 2min · Used for all freelance billing',
     featured: true,
   },
   {
     id: 4,
-    slug: 'llm-prompt-studio',
-    title: 'LLM Prompt Studio',
+    slug: 'studytrack',
+    title: 'StudyTrack',
     number: '_04.',
     description:
-      'A developer-facing prompt engineering tool with version control, A/B testing, latency tracking, and team collaboration.',
+      'A learning tracker for developers studying courses, certifications, or programmes — built to stay consistent.',
     longDescription:
-      'Prompt Studio helps AI teams manage, test, and iterate on prompts across GPT-4, Claude, and Gemini. Features include prompt versioning, side-by-side comparison, cost estimation, and shareable prompt libraries.',
-    techStack: ['Next.js', 'OpenAI API', 'LangChain', 'Vector Databases', 'Tailwind CSS', 'TypeScript'],
-    role: 'Product Engineer (Frontend Lead)',
+      'StudyTrack is a React Native app I built while doing the Go Sabi cybersecurity programme to keep myself accountable. It lets you set study goals, log daily sessions, track module completion per course, and see weekly streaks. Firebase keeps data synced across phone and web.',
+    techStack: ['React Native', 'Firebase', 'TypeScript', 'Expo'],
+    role: 'Solo Full Stack Developer',
     liveUrl: '#',
-    sourceUrl: '#',
-    thumbnail: '/projects/images/llm-prompt-studio.jpg',
-    images: [
-      '/projects/images/llm-prompt-studio.jpg',
-      '/projects/images/llm-prompt-studio-2.jpg',
-    ],
+    sourceUrl: 'https://github.com/subscript0',
+    thumbnail: '/projects/images/studytrack.jpg',
+    images: ['/projects/images/studytrack.jpg', '/projects/images/studytrack-2.jpg'],
     problem:
-      "AI teams were managing prompts in Google Docs and Notion, with no version control, no performance data, and no collaboration tooling.",
+      'I kept starting courses and dropping off after a few weeks. There was no friction-free way to log progress or visualise how consistent I was being.',
     solution:
-      'Built a Git-inspired prompt management system with branching, diffs, and a live test runner that benchmarks prompts across providers simultaneously.',
+      'Built a mobile-first learning log with course modules, daily session timer, streak counter, and a simple progress bar per course. Notifications remind you to study if you miss a day.',
     result:
-      'Adopted by 3 enterprise teams within 6 weeks of private beta. Reduced prompt iteration cycles from days to hours.',
-    metrics: '3 enterprise teams in 6 weeks · 5× faster iteration · 40% avg cost reduction',
+      'Used it to track my Go Sabi cybersecurity programme. Hit 5/10 modules and still going. The streak mechanic keeps me showing up consistently.',
+    metrics: 'Active personal use · Go Sabi programme tracked · Streak maintained',
     featured: true,
   },
 ];
