@@ -1,396 +1,341 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { motion, useInView, useReducedMotion, useScroll, useTransform } from 'framer-motion';
+import StackedTitle from '@/components/Stackedtitle';
+import RevealText from '@/components/about/RevealText';
 
-if (typeof window !== 'undefined') gsap.registerPlugin(ScrollTrigger);
+// The identity plate that stands in for a portrait. Facts only — every row
+// restates something this page already says out loud.
+const PLATE_SPEC = [
+  { k: 'Role', v: 'Full-Stack Developer' },
+  { k: 'Works on', v: 'Frontend · Backend · Product Design' },
+  { k: 'Learning', v: 'Cybersecurity · Cloud' },
+  { k: 'Status', v: 'Open to Work' },
+];
 
-function TermLine({
-  prefix,
-  text,
-  color = 'hsl(var(--foreground))',
-  delay = 0,
-}: {
-  prefix: string;
-  text: string;
-  color?: string;
-  delay?: number;
-}) {
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    let i = 0;
-    const span = el.querySelector('.term-text') as HTMLSpanElement;
-    if (!span) return;
-    const timer = setTimeout(() => {
-      const interval = setInterval(() => {
-        span.textContent = text.slice(0, i);
-        i++;
-        if (i > text.length) clearInterval(interval);
-      }, 22);
-      return () => clearInterval(interval);
-    }, delay);
-    return () => clearTimeout(timer);
-  }, [text, delay]);
+const CHAPTERS = [
+  {
+    index: '01',
+    label: 'Origin',
+    lead: true,
+    body: "Hi, I'm Kaizen—a full-stack developer passionate about building modern digital products from the ground up. I enjoy transforming ideas into intuitive, scalable applications by combining thoughtful product design with reliable engineering. Every project is another opportunity to learn, improve, and build something meaningful.",
+  },
+  {
+    index: '02',
+    label: 'Approach',
+    lead: false,
+    body: "My approach is simple: build software that's easy to use, easy to maintain, and built to grow. I focus on clean architecture, reusable components, responsive interfaces, and dependable backend systems while paying close attention to performance, accessibility, and developer experience.",
+  },
+  {
+    index: '03',
+    label: 'Now',
+    lead: false,
+    body: "Today I'm expanding beyond full-stack development into cloud engineering and cybersecurity while continuing to design and build modern web applications. I'm constantly exploring new technologies, improving my workflow, and pushing myself to become a more complete engineer.",
+  },
+];
 
-  return (
-    <div ref={ref} className="flex items-start gap-2 font-mono text-xs leading-relaxed">
-      <span style={{ color: 'hsl(var(--primary))' }}>{prefix}</span>
-      <span className="term-text" style={{ color }} />
-    </div>
-  );
-}
-
-function ProgressBar({
-  label,
-  pct,
-  color,
-  badge,
-}: {
-  label: string;
-  pct: number;
-  color: string;
-  badge?: string;
-}) {
-  const barRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const el = barRef.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          el.style.width = `${pct}%`;
-          obs.disconnect();
-        }
-      },
-      { threshold: 0.4 }
-    );
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, [pct]);
-
-  return (
-    <div>
-      <div className="flex justify-between items-center mb-1">
-        <div className="flex items-center gap-2">
-          <span className="text-[11px] font-mono" style={{ color: 'hsl(var(--muted-foreground))' }}>
-            {label}
-          </span>
-          {badge && (
-            <span
-              className="text-[9px] px-1.5 py-0.5 rounded font-mono"
-              style={{ backgroundColor: `${color}20`, color }}
-            >
-              {badge}
-            </span>
-          )}
-        </div>
-        <span className="text-[11px] font-mono" style={{ color }}>
-          {pct}%
-        </span>
-      </div>
-      <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: 'hsl(var(--muted))' }}>
-        <div
-          ref={barRef}
-          className="h-full rounded-full transition-all duration-1000 ease-out"
-          style={{ width: '0%', backgroundColor: color }}
-        />
-      </div>
-    </div>
-  );
-}
-
+/**
+ * The narrative body of /about.
+ *
+ * A sticky identity plate and chapter rail on the left; the chapters
+ * themselves on the right. The plate is not decoration — it tracks which
+ * chapter is in the reading band and names it, so the pinned column is visibly
+ * *doing something* rather than merely refusing to scroll.
+ *
+ * All motion is framer-motion. The previous build ran a GSAP `useReveal` over
+ * `[data-reveal]` here AND a second GSAP tween writing `opacity` on the same
+ * chapter elements for the focus effect — two writers on one property, which is
+ * what made the dimming stutter. There is exactly one writer per property now.
+ */
 export default function AboutMe() {
-  const sectionRef  = useRef<HTMLElement>(null);
-  const quoteRef    = useRef<HTMLHeadingElement>(null);
-  const leftRef     = useRef<HTMLDivElement>(null);
-  const rightRef    = useRef<HTMLDivElement>(null);
+  const reduce = useReducedMotion();
+  const [active, setActive] = useState(0);
 
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      gsap.from(quoteRef.current, {
-        scrollTrigger: { trigger: quoteRef.current, start: 'top 85%' },
-        y: 60, opacity: 0, duration: 1, ease: 'power3.out',
-      });
-      gsap.from(leftRef.current?.children ?? [], {
-        scrollTrigger: { trigger: leftRef.current, start: 'top 85%' },
-        y: 40, opacity: 0, stagger: 0.12, duration: 0.8, ease: 'power3.out',
-      });
-      gsap.from(rightRef.current?.children ?? [], {
-        scrollTrigger: { trigger: rightRef.current, start: 'top 85%' },
-        y: 30, opacity: 0, stagger: 0.15, duration: 0.8, ease: 'power3.out',
-      });
-    }, sectionRef);
-    return () => ctx.revert();
+  const report = useCallback((index: number, inView: boolean) => {
+    if (inView) setActive(index);
   }, []);
 
   return (
-    <section
-      ref={sectionRef}
-      id="about"
-      className="py-24 px-6 lg:px-12 max-w-7xl mx-auto"
-      aria-labelledby="about-heading"
+    <section id="about" className="relative py-20 lg:py-28" aria-labelledby="about-heading">
+      <div className="measure">
+        <StackedTitle
+          parallax
+          first="Who I"
+          second="Am"
+          id="about-heading"
+          sizeClassName="text-[clamp(2.5rem,11vw,6rem)]"
+        />
+      </div>
+
+      <div className="measure mt-16 grid grid-cols-1 items-start gap-12 lg:mt-24 lg:grid-cols-[300px_1fr] lg:gap-16">
+        {/* ══ Sticky column — plate + chapter rail ═════════════════════════ */}
+        <div className="flex flex-col gap-8 lg:sticky lg:top-24">
+          <IdentityPlate active={active} reduce={!!reduce} />
+          <ChapterRail active={active} reduce={!!reduce} />
+        </div>
+
+        {/* ══ Chapters ═════════════════════════════════════════════════════ */}
+        <div className="flex flex-col gap-16 lg:gap-24">
+          {CHAPTERS.map((chapter, i) => (
+            <Chapter
+              key={chapter.index}
+              chapter={chapter}
+              i={i}
+              isActive={active === i}
+              reduce={!!reduce}
+              report={report}
+            />
+          ))}
+        </div>
+      </div>
+
+    </section>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Identity plate
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/**
+ * The portrait plate. The 3/4 crop-marked frame was always built to take a
+ * photograph — this is that photograph dropped in.
+ *
+ * The image sits BEHIND the existing typographic layer rather than replacing
+ * it, so the plate still carries Fig. 01, the wordmark, the spec rows and the
+ * live "Reading" row. Two things keep that type legible over a photo, and both
+ * are borrowed from `scroll-expansion-hero`, which solves the same problem:
+ *
+ *  - the photo is pulled most of the way to monochrome, so it cannot introduce
+ *    a second and third colour into a page built on greyscale plus one accent;
+ *  - a scrim sits between photo and type, weighted to the top and bottom edges
+ *    where the micro-labels actually are, rather than a flat wash that would
+ *    grey out the middle of the picture for no reason.
+ *
+ * A parallax drift on the image plays against the opposite drift already on the
+ * wordmark, which is what stops the plate reading as a flat sticker.
+ */
+function IdentityPlate({ active, reduce }: { active: number; reduce: boolean }) {
+  const ref = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] });
+  // A whisper of parallax on the wordmark inside a fixed frame — enough to
+  // register as depth, not enough to read as movement.
+  const markY = useTransform(scrollYProgress, [0, 1], [16, -16]);
+  // The photo drifts the other way. The layer is 12% taller than the frame so
+  // this travel can never expose an edge.
+  const photoY = useTransform(scrollYProgress, [0, 1], ['-5%', '5%']);
+
+  return (
+    <motion.figure
+      ref={ref}
+      className="crop-frame rule-t rule-b rule-l rule-r relative mx-auto w-full max-w-[320px] overflow-hidden"
+      initial={reduce ? undefined : { opacity: 0, y: 24 }}
+      whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '0px 0px -10% 0px' }}
+      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
     >
-      <p className="section-number mb-4">About Me</p>
+      <span className="crop crop--tl z-20" aria-hidden="true" />
+      <span className="crop crop--tr z-20" aria-hidden="true" />
+      <span className="crop crop--bl z-20" aria-hidden="true" />
+      <span className="crop crop--br z-20" aria-hidden="true" />
 
-      {/* Large quote */}
-      <h2
-        ref={quoteRef}
-        id="about-heading"
-        className="text-[clamp(1.4rem,3.2vw,2.4rem)] font-semibold leading-[1.3] max-w-4xl mb-16"
-        style={{ color: 'hsl(var(--foreground) / 0.9)' }}
+      {/* ── The photograph ─────────────────────────────────────────────── */}
+      <motion.div
+        aria-hidden="true"
+        className="absolute inset-x-0 -top-[6%] h-[112%] will-change-transform"
+        style={reduce ? undefined : { y: photoY }}
       >
-        I build systems end-to-end —{' '}
-        <span style={{ color: 'hsl(var(--primary))' }}>clean architecture,</span>{' '}
-        reliable data flow, and interfaces that just work.
-      </h2>
+        <Image
+          src="/me.jpg"
+          alt=""
+          fill
+          sizes="320px"
+          className="object-cover"
+          style={{ filter: 'saturate(0.58) contrast(1.06)' }}
+        />
+      </motion.div>
 
-      {/* ── 3-column layout: bio | image | cards ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_220px_1fr] gap-10 lg:gap-12 items-start">
+      {/* Scrim — weighted to the rails, transparent through the middle. */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0"
+        style={{
+          background:
+            'linear-gradient(to bottom,' +
+            'hsl(var(--background) / 0.84) 0%,' +
+            'hsl(var(--background) / 0.30) 28%,' +
+            'hsl(var(--background) / 0.38) 56%,' +
+            'hsl(var(--background) / 0.92) 100%)',
+        }}
+      />
 
-        {/* ── Left: bio text ── */}
-        <div ref={leftRef} className="flex flex-col gap-5">
-          <div className="flex items-center gap-3">
-            <p className="text-sm font-semibold tracking-widest uppercase" style={{ color: 'hsl(var(--primary))' }}>
-              This is me.
-            </p>
-            {/* Mobile-only image */}
-            <div className="lg:hidden w-12 h-12 rounded-full overflow-hidden border-2 flex-shrink-0"
-              style={{ borderColor: 'hsl(var(--primary) / 0.4)' }}>
-              <Image
-                src="/me.jpg"
-                alt="Kaizen"
-                width={48}
-                height={48}
-                className="object-cover w-full h-full"
-              />
-            </div>
-          </div>
+      <div className="relative z-10 flex aspect-[3/4] flex-col justify-between p-6">
+        <div className="flex items-baseline justify-between gap-3">
+          <span className="micro micro--strong">Fig. 01</span>
+          <span className="micro micro--accent">
+            <motion.span
+              aria-hidden="true"
+              className="inline-block h-1.5 w-1.5 bg-[hsl(var(--primary))]"
+              animate={reduce ? undefined : { opacity: [1, 0.2, 1] }}
+              transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
+            />
+            Open to work
+          </span>
+        </div>
 
-          <h3 className="text-xl font-bold" style={{ color: 'hsl(var(--foreground))' }}>
-            Hi, I&apos;m Kaizen.
-          </h3>
+        <motion.p
+          className="text-[clamp(2.25rem,10vw,3rem)] font-black uppercase leading-[0.82] tracking-tight text-[hsl(var(--foreground))]"
+          style={reduce ? undefined : { y: markY }}
+        >
+          Kai<span className="accent">zen</span>
+        </motion.p>
 
-          <p className="leading-relaxed text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>
-            I&apos;m a full stack developer with around 5 years of experience building web
-            applications, dashboards, and system-driven interfaces. I work across both
-            frontend and backend — turning complex ideas into clean, functional products
-            without unnecessary complexity.
-          </p>
-          <p className="leading-relaxed text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>
-            My work centres on practical architecture, reusable components, and reliable
-            data flow between client and server. I care less about trends and more about
-            building systems that are stable, scalable, and maintainable over time.
-          </p>
-          <p className="leading-relaxed text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>
-            Currently expanding into cybersecurity — learning how modern products are
-            attacked and defended, and how to apply that thinking to the systems I build.
-          </p>
-
-          <a
-            href="mailto:chiemeried321@gmail.com"
-            className="text-sm font-medium mt-1 self-start hover:underline underline-offset-4 transition-colors"
-            style={{ color: 'hsl(var(--primary))' }}
-          >
-            chiemeried321@gmail.com →
-          </a>
-
-          {/* Stack badges */}
-          <div className="flex flex-wrap gap-2 pt-1">
-            {['Next.js', 'TypeScript', 'Node.js', 'React', 'MongoDB', 'Firebase'].map(tag => (
-              <span
-                key={tag}
-                className="text-[11px] px-2.5 py-1 rounded-full border font-mono"
-                style={{
-                  borderColor: 'hsl(var(--border))',
-                  color: 'hsl(var(--muted-foreground))',
-                  backgroundColor: 'hsl(var(--background-light))',
-                }}
+        <div>
+          <dl className="grid grid-cols-1">
+            {PLATE_SPEC.map(({ k, v }, i) => (
+              <motion.div
+                key={k}
+                className="rule-t flex items-baseline justify-between gap-3 py-2"
+                initial={reduce ? undefined : { opacity: 0, x: -8 }}
+                whileInView={reduce ? undefined : { opacity: 1, x: 0 }}
+                viewport={{ once: true, margin: '0px 0px -8% 0px' }}
+                transition={{ duration: 0.4, delay: 0.15 + i * 0.06 }}
               >
-                {tag}
-              </span>
+                <dt className="micro shrink-0">{k}</dt>
+                <dd className="text-right text-xs text-[hsl(var(--foreground)/0.85)]">{v}</dd>
+              </motion.div>
             ))}
-          </div>
-        </div>
+          </dl>
 
-        {/* ── Centre: profile image (desktop only) ── */}
-        <div className="hidden lg:flex flex-col items-center gap-4">
-          <div
-            className="relative w-full aspect-[3/4] rounded-2xl overflow-hidden border-2"
-            style={{ borderColor: 'hsl(var(--primary) / 0.3)' }}
-          >
-            <Image
-              src="/me.jpg"
-              alt="Kaizen — Full Stack Developer"
-              fill
-              className="object-cover object-top"
-              sizes="220px"
-              priority
-            />
-            {/* Subtle gradient overlay at bottom */}
-            <div
-              className="absolute bottom-0 left-0 right-0 h-1/3"
-              style={{
-                background: 'linear-gradient(to top, hsl(var(--background-light)), transparent)',
-              }}
-            />
-          </div>
-          {/* Floating badge below image */}
-          <div
-            className="w-full rounded-xl border p-3 text-center"
-            style={{
-              borderColor: 'hsl(var(--border))',
-              backgroundColor: 'hsl(var(--background-light))',
-            }}
-          >
-            <p className="text-xs font-semibold" style={{ color: 'hsl(var(--foreground))' }}>
-              Kaizen
-            </p>
-            <p className="text-[10px] mt-0.5" style={{ color: 'hsl(var(--muted-foreground))' }}>
-              Full Stack Developer
-            </p>
-            <div className="flex items-center justify-center gap-1.5 mt-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-              <span className="text-[10px]" style={{ color: 'hsl(var(--muted-foreground))' }}>
-                Open to work
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* ── Right: terminal + cybersecurity card ── */}
-        <div ref={rightRef} className="flex flex-col gap-4">
-
-          {/* Terminal */}
-          <div
-            className="rounded-xl border overflow-hidden"
-            style={{ borderColor: 'hsl(var(--border))', backgroundColor: 'hsl(var(--background-light))' }}
-          >
-            <div
-              className="flex items-center gap-2 px-4 py-2.5 border-b"
-              style={{ borderColor: 'hsl(var(--border))', backgroundColor: 'hsl(var(--muted))' }}
-            >
-              <span className="w-2.5 h-2.5 rounded-full bg-red-500/70" />
-              <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/70" />
-              <span className="w-2.5 h-2.5 rounded-full bg-green-500/70" />
-              <span className="ml-3 text-[11px] font-mono" style={{ color: 'hsl(var(--muted-foreground))' }}>
-                kaizen@dev:~$
-              </span>
-            </div>
-            <div className="p-4 flex flex-col gap-2.5">
-              <TermLine prefix=">"  text="whoami"                            delay={400} />
-              <TermLine prefix="→"  text="Kaizen — Full Stack Developer"     delay={800}  color="hsl(var(--foreground))" />
-              <TermLine prefix=">"  text="cat stack.txt"                     delay={1300} />
-              <TermLine prefix="→"  text="frontend + backend + learning sec" delay={1700} color="hsl(var(--secondary))" />
-              <TermLine prefix=">"  text="ls current/"                       delay={2200} />
-              <TermLine prefix="→"  text="building/  freelance/  go-sabi/"   delay={2600} color="hsl(var(--foreground))" />
-              <div className="flex items-center gap-2 font-mono text-xs mt-1">
-                <span style={{ color: 'hsl(var(--primary))' }}>{'>'}</span>
-                <span className="inline-block w-2 h-[14px] animate-pulse"
-                  style={{ backgroundColor: 'hsl(var(--primary))' }} />
-              </div>
-            </div>
-          </div>
-
-          {/* Cybersecurity learning card */}
-          <div
-            className="rounded-xl border p-4"
-            style={{
-              borderColor: 'hsl(142 70% 45% / 0.25)',
-              backgroundColor: 'hsl(142 70% 45% / 0.04)',
-            }}
-          >
-            {/* Header */}
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: 'hsl(142, 70%, 45%)' }} />
-                <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'hsl(142, 70%, 45%)' }}>
-                  Currently Learning
-                </span>
-              </div>
-              <span
-                className="text-[9px] font-mono px-2 py-0.5 rounded-full"
-                style={{ backgroundColor: 'hsl(38 92% 50% / 0.15)', color: 'hsl(38, 92%, 50%)' }}
-              >
-                BEGINNER
-              </span>
-            </div>
-
-            {/* Badge row */}
-            <div
-              className="flex items-start gap-3 mb-4 p-3 rounded-lg border"
-              style={{ borderColor: 'hsl(var(--border))', backgroundColor: 'hsl(var(--background))' }}
-            >
-              <div
-                className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
-                style={{ backgroundColor: 'hsl(142 70% 45% / 0.15)' }}
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-                  stroke="hsl(142, 70%, 45%)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                </svg>
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold" style={{ color: 'hsl(var(--foreground))' }}>
-                  Go Sabi — Cybersecurity
-                </p>
-                <p className="text-[11px] leading-relaxed mt-1" style={{ color: 'hsl(var(--muted-foreground))' }}>
-                  Just getting started — learning the fundamentals of network
-                  security, ethical hacking, and how systems get compromised.
-                  Still early days but committed to seeing it through.
-                </p>
-              </div>
-            </div>
-
-            {/* Progress bars — honest beginner numbers */}
-            <div className="flex flex-col gap-3 mb-4">
-              <ProgressBar label="Linux & Networking"   pct={32} color="hsl(142, 70%, 45%)" badge="intro" />
-              <ProgressBar label="Ethical Hacking"      pct={18} color="hsl(var(--primary))"  badge="intro" />
-              <ProgressBar label="Secure Coding"        pct={25} color="hsl(var(--secondary))" badge="learning" />
-              <ProgressBar label="CTF / Practice Labs"  pct={12} color="hsl(38, 92%, 50%)"   badge="just started" />
-            </div>
-
-            {/* Module tracker */}
-            <div
-              className="pt-3 border-t flex items-center justify-between flex-wrap gap-2"
-              style={{ borderColor: 'hsl(var(--border))' }}
-            >
-              <span className="text-[11px] font-mono" style={{ color: 'hsl(var(--muted-foreground))' }}>
-                Programme progress
-              </span>
-              <div className="flex items-center gap-2">
-                <div className="flex gap-0.5" aria-label="5 out of 10 modules complete">
-                  {Array.from({ length: 10 }).map((_, i) => (
-                    <div
-                      key={i}
-                      className="w-3 h-3 rounded-sm transition-colors"
-                      style={{
-                        backgroundColor: i < 5
-                          ? 'hsl(142, 70%, 45%)'
-                          : 'hsl(var(--muted))',
-                      }}
-                    />
-                  ))}
-                </div>
-                <span className="text-[11px] font-mono font-bold" style={{ color: 'hsl(142, 70%, 45%)' }}>
-                  5/10
-                </span>
-              </div>
-            </div>
-
-            {/* Honest note */}
-            <p
-              className="text-[10px] mt-3 font-mono leading-relaxed"
-              style={{ color: 'hsl(var(--muted-foreground))' }}
-            >
-              # still learning — building foundations before going deeper
-            </p>
+          {/* The live row: the plate names whichever chapter is being read. */}
+          <div className="rule-t mt-2 flex items-baseline justify-between gap-3 pt-3">
+            <span className="micro shrink-0">Reading</span>
+            <span aria-hidden="true" className="relative block h-4 flex-1 overflow-hidden">
+              {CHAPTERS.map((c, i) => (
+                <motion.span
+                  key={c.index}
+                  className="micro micro--accent absolute inset-0 justify-end"
+                  initial={false}
+                  animate={
+                    reduce
+                      ? { opacity: active === i ? 1 : 0 }
+                      : {
+                          y: active === i ? '0%' : active > i ? '-120%' : '120%',
+                          opacity: active === i ? 1 : 0,
+                        }
+                  }
+                  transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                >
+                  {c.index} {c.label}
+                </motion.span>
+              ))}
+            </span>
           </div>
         </div>
       </div>
-    </section>
+    </motion.figure>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Chapter rail — one accent bar that slides between rows via shared layout
+   ══════════════════════════════════════════════════════════════════════════ */
+
+function ChapterRail({ active, reduce }: { active: number; reduce: boolean }) {
+  return (
+    <ol className="hidden lg:block" aria-hidden="true">
+      {CHAPTERS.map((c, i) => (
+        <li key={c.index} className="rule-t relative flex items-center gap-3 py-3 pl-4">
+          {active === i ? (
+            <motion.span
+              layoutId={reduce ? undefined : 'about-chapter-marker'}
+              className="absolute left-0 top-0 h-full w-[2px] bg-[hsl(var(--primary))]"
+              transition={{ type: 'spring', stiffness: 380, damping: 34 }}
+            />
+          ) : null}
+          <span
+            className="micro transition-colors duration-200"
+            style={active === i ? { color: 'hsl(var(--primary-ink, var(--primary)))' } : undefined}
+          >
+            {c.index}
+          </span>
+          <span
+            className="micro transition-colors duration-200"
+            style={active === i ? { color: 'hsl(var(--foreground))' } : undefined}
+          >
+            {c.label}
+          </span>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Chapter
+   ══════════════════════════════════════════════════════════════════════════ */
+
+function Chapter({
+  chapter,
+  i,
+  isActive,
+  reduce,
+  report,
+}: {
+  chapter: (typeof CHAPTERS)[number];
+  i: number;
+  isActive: boolean;
+  reduce: boolean;
+  report: (index: number, inView: boolean) => void;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  // A narrow band across the middle of the viewport is the "reading position".
+  const inView = useInView(ref, { margin: '-45% 0px -45% 0px' });
+
+  useEffect(() => {
+    report(i, inView);
+  }, [inView, i, report]);
+
+  return (
+    <motion.div
+      ref={ref}
+      initial={false}
+      animate={reduce ? undefined : { opacity: isActive ? 1 : 0.42 }}
+      transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+    >
+      <motion.div
+        className="rule-t mb-5 flex items-baseline justify-between gap-3 pt-3"
+        initial={reduce ? undefined : { opacity: 0, y: 14 }}
+        whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: '0px 0px -15% 0px' }}
+        transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+      >
+        <span
+          className="micro transition-colors duration-200"
+          style={isActive ? { color: 'hsl(var(--primary-ink, var(--primary)))' } : undefined}
+        >
+          {chapter.index}
+        </span>
+        <span className="micro">{chapter.label}</span>
+      </motion.div>
+
+      {/*
+        The opening chapter used to carry a serif drop cap — a third typeface
+        that split "H" off "i, I'm Kaizen", spanned two lines and left an indent
+        notch. Hierarchy comes from scale instead: the lead chapter is simply
+        set larger and in fuller ink.
+      */}
+      <RevealText
+        text={chapter.body}
+        className={
+          chapter.lead
+            ? 'text-[clamp(1.25rem,4.4vw,1.6rem)] leading-[1.45] text-[hsl(var(--foreground)/0.94)]'
+            : 'text-[clamp(1.0625rem,2.6vw,1.25rem)] leading-relaxed text-[hsl(var(--muted-foreground))]'
+        }
+        stagger={chapter.lead ? 0.014 : 0.008}
+      />
+    </motion.div>
   );
 }

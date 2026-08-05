@@ -1,5 +1,4 @@
 'use client';
-
 import { useEffect, useRef, useState } from 'react';
 
 interface Props {
@@ -17,11 +16,20 @@ export default function CounterStat({ value, label, className = '' }: Props) {
   // Parse "3+" → { num: 3, suffix: '+' }  |  "5K+" → { num: 5000, suffix: 'K+' }
   const parsed = (() => {
     const raw = value.replace(/,/g, '');
-    const match = raw.match(/^(\d+(?:\.\d+)?)(.*)/);
+    const match = /^(\d+(?:\.\d+)?)(.*)/.exec(raw);
     if (!match) return { num: 0, suf: value };
     let num = parseFloat(match[1]);
-    let suf = match[2] ?? '';
-    if (suf.startsWith('K')) { num *= 1000; suf = suf.replace('K', 'K'); }
+    const suf = match[2];
+
+    // Handle suffix multipliers
+    if (suf.includes('K')) {
+      num *= 1000;
+    } else if (suf.includes('M')) {
+      num *= 1000000;
+    } else if (suf.includes('B')) {
+      num *= 1000000000;
+    }
+
     return { num, suf };
   })();
 
@@ -37,14 +45,25 @@ export default function CounterStat({ value, label, className = '' }: Props) {
 
   useEffect(() => {
     if (!started) return;
+
+    // Check for reduced motion preference
+    const reduceMotion = typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (reduceMotion) {
+      // For reduced motion, show the final value immediately
+      setCount(parsed.num);
+      return;
+    }
+
     const duration = 1400;
-    const start    = performance.now();
-    const target   = parsed.num;
+    const start = performance.now();
+    const target = parsed.num;
 
     const frame = (now: number) => {
       const progress = Math.min((now - start) / duration, 1);
-      // Ease out expo
-      const eased = 1 - Math.pow(2, -10 * progress);
+      // Use motion design easing: ease-spring-3 (gentle ease-out)
+      const eased = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
       setCount(Math.floor(eased * target));
       if (progress < 1) requestAnimationFrame(frame);
       else setCount(target);
@@ -62,13 +81,13 @@ export default function CounterStat({ value, label, className = '' }: Props) {
 
   return (
     <div ref={ref} className={className}>
-      <p className="text-3xl md:text-4xl font-bold tabular-nums" style={{ color: 'hsl(var(--foreground))' }}>
+      <p className="text-3xl md:text-4xl font-bold tabular-nums text-foreground/90">
         {display}
-        <span style={{ color: 'hsl(var(--primary))' }}>
+        <span className="text-primary/90">
           {suffix.replace('K', '')}
         </span>
       </p>
-      <p className="text-sm mt-1" style={{ color: 'hsl(var(--muted-foreground))' }}>{label}</p>
+      <p className="text-sm mt-1 text-muted-foreground/80">{label}</p>
     </div>
   );
 }

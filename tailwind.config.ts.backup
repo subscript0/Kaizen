@@ -1,0 +1,100 @@
+import type { Config } from 'tailwindcss';
+
+const config: Config = {
+  darkMode: ['class'],
+  content: [
+    './pages/**/*.{js,ts,jsx,tsx,mdx}',
+    './components/**/*.{js,ts,jsx,tsx,mdx}',
+    './app/**/*.{js,ts,jsx,tsx,mdx}',
+  ],
+  theme: {
+    screens: {
+      xs: '420px',
+      sm: '640px',
+      md: '768px',
+      lg: '1024px',
+      xl: '1280px',
+      '2xl': '1536px',
+    },
+    extend: {
+      colors: {
+        background: 'hsl(var(--background))',
+        'background-light': 'hsl(var(--background-light))',
+        foreground: 'hsl(var(--foreground))',
+        primary: {
+          DEFAULT: 'hsl(var(--primary))',
+          foreground: 'hsl(var(--primary-foreground))',
+        },
+        secondary: {
+          DEFAULT: 'hsl(var(--secondary))',
+          foreground: 'hsl(var(--secondary-foreground))',
+        },
+        muted: {
+          DEFAULT: 'hsl(var(--muted))',
+          foreground: 'hsl(var(--muted-foreground))',
+        },
+        border: 'hsl(var(--border))',
+        ring: 'hsl(var(--ring))',
+        success: 'hsl(var(--success))',
+        warning: 'hsl(var(--warning))',
+        error: 'hsl(var(--error))',
+      },
+      fontFamily: {
+        sans:  ['var(--font-sans)', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        serif: ['var(--font-serif)', 'Georgia', 'serif'],
+        mono:  ['var(--font-mono)', 'ui-monospace', 'monospace'],
+      },
+      // ── Hard offset shadows (zero blur) — the "Flux shadow" ──
+      // Remaps the default Tailwind shadow scale so shadow-{md,lg,xl,2xl}
+      // "just work" as neo-brutalist ink shadows across the whole site.
+      boxShadow: {
+        DEFAULT: '3px 3px 0 hsl(var(--foreground))',
+        sm:  '2px 2px 0 hsl(var(--foreground))',
+        md:  '6px 6px 0 hsl(var(--foreground))',
+        lg:  '8px 8px 0 hsl(var(--foreground))',
+        xl:  '10px 10px 0 hsl(var(--foreground))',
+        '2xl': '12px 12px 0 hsl(var(--foreground))',
+        accent: '6px 6px 0 hsl(var(--primary))',
+        none: 'none',
+      },
+      animation: {
+        'fade-in': 'fadeIn 0.5s ease-in-out',
+        'slide-up': 'slideUp 0.6s ease-out',
+        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'word-arrive': 'word-arrive 0.55s cubic-bezier(0.2, 0.9, 0.25, 1) both',
+        'pop-in': 'pop-in 0.4s cubic-bezier(0.2, 0.9, 0.25, 1.2) both',
+      },
+      keyframes: {
+        fadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+        slideUp: {
+          '0%': { opacity: '0', transform: 'translateY(20px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        // Editorial heading arrival: wide tracking + lift settling in.
+        'word-arrive': {
+          '0%': {
+            opacity: '0',
+            letterSpacing: '0.4em',
+            transform: 'translateY(10px)',
+          },
+          '100%': {
+            opacity: '1',
+            letterSpacing: 'normal',
+            transform: 'translateY(0)',
+          },
+        },
+        // Card/element reveal — never from scale(0).
+        'pop-in': {
+          '0%': { opacity: '0', transform: 'scale(0.96)' },
+          '100%': { opacity: '1', transform: 'scale(1)' },
+        },
+      },
+    },
+  },
+  plugins: [require('@tailwindcss/typography')],
+};
+
+export default config;

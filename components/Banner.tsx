@@ -1,241 +1,388 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
+import Link from "next/link";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { personalInfo } from "@/lib/data";
-import { trackBookACall } from "@/lib/utils";
-import { ArrowRight, Code, Zap, Sparkles, ChevronDown } from "lucide-react";
+import { trackHireMeNow } from "@/lib/utils";
+import { ArrowUpRight, ChevronDown } from "lucide-react";
+import Magnetic from "@/components/motion/Magnetic";
+import ScrambleOnView from "@/components/motion/ScrambleOnView";
+import { GridPattern } from "@/components/ui/grid-pattern";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
 }
 
+const prefersReducedMotion = () =>
+  typeof window !== "undefined" &&
+  window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+
+// gsap wants layout-effect timing (set the "before" state pre-paint so the
+// hero never flashes its final frame), but that warns under SSR — pick once.
+const useIsoLayoutEffect =
+  typeof window !== "undefined" ? useLayoutEffect : useEffect;
+
+// The display headline, split into words so each can "arrive" on its own beat.
+// `accent` = solid lime highlight block (the Flux move); `dim` = muted trailing
+// clause. Splitting here keeps the JSX declarative and the stagger uniform.
+type Word = { text: string; accent?: boolean; dim?: boolean };
+const HEADLINE: Word[] = [
+  { text: "Full-stack" },
+  { text: "developer", accent: true },
+  { text: "building", dim: true },
+  { text: "high-performance", dim: true },
+  { text: "products.", dim: true },
+];
+
+// Hard-shadow tech chips under the headline — proof-of-stack at a glance.
+const TAGS = ["React", "Next.js", "TypeScript", "Node", "GSAP"];
+
 export default function Banner() {
   const containerRef = useRef<HTMLElement>(null);
-  const headingRef = useRef<HTMLHeadingElement>(null);
+  const parallaxRef = useRef<HTMLDivElement>(null); // scroll-scrub owns this
+  const mouseLayerRef = useRef<HTMLDivElement>(null); // pointer-parallax owns this
+  const eyebrowRef = useRef<HTMLDivElement>(null);
   const subRef = useRef<HTMLParagraphElement>(null);
+  const tagsRef = useRef<HTMLDivElement>(null);
   const ctaRef = useRef<HTMLDivElement>(null);
   const statsRef = useRef<HTMLDivElement>(null);
   const arrowRef = useRef<HTMLDivElement>(null);
-  const floatingIconsRef = useRef<HTMLDivElement>(null);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [isMounted, setIsMounted] = useState(false);
+  const glyphScrollRef = useRef<HTMLDivElement>(null); // scroll-scrub owns this
+  const glyphRef = useRef<HTMLDivElement>(null); // intro + float own this
 
-  // Animated counter for stats
+  // ── Animated stat counters ────────────────────────────────────────
+  // The hero is above the fold, so we count on mount rather than on scroll.
   useEffect(() => {
     if (!statsRef.current) return;
-    const stats = statsRef.current.querySelectorAll(".stat-value");
+    const reduce = prefersReducedMotion();
+    const stats = statsRef.current.querySelectorAll<HTMLElement>(".stat-value");
     stats.forEach((stat) => {
       const target = parseInt(stat.getAttribute("data-target") || "0", 10);
+      if (reduce) {
+        stat.textContent = target.toString();
+        return;
+      }
       let current = 0;
       const increment = target / 60;
-      const updateCounter = () => {
+      const tick = () => {
         current += increment;
         if (current < target) {
           stat.textContent = Math.floor(current).toString();
-          requestAnimationFrame(updateCounter);
+          requestAnimationFrame(tick);
         } else {
           stat.textContent = target.toString();
         }
       };
-      updateCounter();
+      tick();
     });
-    setIsMounted(true);
   }, []);
 
-  useEffect(() => {
-    if (!isMounted) return;
-    const ctx = gsap.context(() => {
-      const tl = gsap.timeline({ delay: 1.8 });
+  // ── Entrance + scroll choreography ────────────────────────────────
+  // Every animated node has exactly ONE writer of its transform to avoid the
+  // jitter the old build had (parallax + scroll fighting over the same `y`).
+  useIsoLayoutEffect(() => {
+    if (prefersReducedMotion()) return;
 
-      tl.from(headingRef.current, {
-        y: 80,
+    const ctx = gsap.context(() => {
+      // Word-arrive entrance: staggered rise + fade (transform/opacity only —
+      // no masks, so the accent block's hard shadow is never clipped).
+      const tl = gsap.timeline({
+        delay: 0.15,
+        defaults: { ease: "var(--ease-spring-2)" },
+      });
+
+      tl.from(eyebrowRef.current, {
+        y: 14,
         opacity: 0,
-        duration: 1,
-        ease: "power4.out",
+        duration: 0.6,
+        ease: "var(--ease-spring-1)",
       })
         .from(
-          subRef.current,
-          { y: 40, opacity: 0, duration: 0.8, ease: "power3.out" },
-          "-=0.6"
+          ".hero-word",
+          { yPercent: 60, opacity: 0, duration: 0.7, stagger: 0.07 },
+          "-=0.25"
         )
         .from(
-          ctaRef.current,
-          { y: 30, opacity: 0, duration: 0.7, ease: "back.out(0.7)" },
-          "-=0.5"
+          ".hero-accent-fill",
+          {
+            scaleX: 0,
+            transformOrigin: "left center",
+            duration: 0.5,
+            ease: "expo.out",
+          },
+          "-=0.35"
+        )
+        .from(
+          subRef.current,
+          { y: 20, opacity: 0, duration: 0.6, ease: "var(--ease-spring-3)" },
+          "-=0.3"
+        )
+        .from(
+          tagsRef.current?.children ?? [],
+          { y: 14, opacity: 0, duration: 0.5, stagger: 0.05 },
+          "-=0.2"
+        )
+        .from(
+          ctaRef.current?.children ?? [],
+          { y: 16, opacity: 0, duration: 0.5, stagger: 0.08 },
+          "-=0.25"
         )
         .from(
           statsRef.current?.children ?? [],
-          {
-            y: 25,
-            opacity: 0,
-            stagger: 0.1,
-            duration: 0.6,
-            ease: "power3.out",
-          },
-          "-=0.4"
+          { y: 16, opacity: 0, duration: 0.5, stagger: 0.07 },
+          "-=0.3"
         )
-        .from(
-          arrowRef.current,
-          { opacity: 0, y: 15, duration: 0.5, ease: "power2.out" },
-          "-=0.2"
-        );
+        .from(arrowRef.current, { opacity: 0, duration: 0.5 }, "-=0.15");
 
-      // Gentle floating icons
-      gsap.to(floatingIconsRef.current?.children ?? [], {
-        y: "random(-15, 15)",
-        x: "random(-10, 10)",
-        rotation: "random(-8, 8)",
-        duration: "random(4, 7)",
+      // Editorial "K": fade/scale in (never from scale 0), then breathe forever.
+      // Intro touches scale+opacity, the loop touches y+rotation — disjoint
+      // properties, so they compose cleanly instead of fighting.
+      gsap.fromTo(
+        glyphRef.current,
+        { opacity: 0, scale: 0.96 },
+        { opacity: 1, scale: 1, duration: 1.4, delay: 0.5, ease: "var(--ease-spring-2)" }
+      );
+      gsap.to(glyphRef.current, {
+        y: 20,
+        rotation: 2,
+        duration: 9,
         repeat: -1,
         yoyo: true,
         ease: "sine.inOut",
-        stagger: 0.15,
+        delay: 1.4,
       });
+
+      // Scroll exit: the composition drifts up and dims as the hero leaves.
+      // Only transform/opacity, and only on nodes no other tween touches.
+      gsap
+        .timeline({
+          scrollTrigger: {
+            trigger: containerRef.current,
+            start: "top top",
+            end: "bottom top",
+            scrub: 0.6,
+          },
+        })
+        .to(parallaxRef.current, { y: -60, opacity: 0.4, ease: "none" }, 0)
+        .to(glyphScrollRef.current, { y: -120, ease: "none" }, 0)
+        .to(arrowRef.current, { opacity: 0, y: 16, ease: "none" }, 0);
     }, containerRef);
 
     return () => ctx.revert();
-  }, [isMounted]);
+  }, []);
 
-  // Subtle parallax on mouse move (no glow)
+  // ── Quiet pointer parallax ────────────────────────────────────────
+  // Confined to its own layer so it never collides with the scroll-scrub.
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      const x = (e.clientX / window.innerWidth - 0.5) * 12;
-      const y = (e.clientY / window.innerHeight - 0.5) * 12;
-      setMousePosition({ x, y });
+    if (prefersReducedMotion()) return;
+    const el = mouseLayerRef.current;
+    if (!el || window.matchMedia("(hover: none)").matches) return;
+    let raf = 0;
+    const handle = (e: MouseEvent) => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const x = (e.clientX / window.innerWidth - 0.5) * 12;
+        const y = (e.clientY / window.innerHeight - 0.5) * 12;
+        gsap.to(el, { x: -x, y: -y * 0.7, duration: 0.9, ease: "var(--ease-spring-2)" });
+      });
     };
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mousemove", handle, { passive: true });
+    return () => {
+      window.removeEventListener("mousemove", handle);
+      cancelAnimationFrame(raf);
+    };
   }, []);
 
   return (
     <section
       ref={containerRef}
       id="home"
-      className="relative min-h-screen flex flex-col justify-center pt-20 pb-16 px-6 lg:px-12 overflow-hidden"
+      className="relative min-h-screen flex flex-col justify-center pt-28 pb-24 px-6 lg:px-12 overflow-hidden"
       aria-label="Hero section"
     >
-      {/* Clean background - no distracting glow */}
-      <div className="absolute inset-0 -z-10">
-        <div className="absolute top-1/3 left-1/4 w-64 h-64 bg-primary/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-primary/5 rounded-full blur-3xl" />
+      {/* Barely-there paper wash — flat, editorial, behind everything. */}
+      <div className="absolute inset-0 -z-10" aria-hidden="true">
+        {/* Editorial grid — themed to the ink palette + radially masked so it
+            dissolves toward the edges. Home page only (lives in the hero). */}
+        <GridPattern
+          width={48}
+          height={48}
+          squares={[
+            [3, 2],
+            [6, 5],
+            [10, 3],
+            [13, 7],
+            [8, 8],
+          ]}
+          className="[mask-image:radial-gradient(680px_circle_at_65%_35%,white,transparent)] stroke-foreground/[0.06] fill-foreground/[0.035]"
+        />
+        {/* The two 120px-blur colour blooms that used to sit here are gone:
+            "monochrome base, no gradients" leaves no room for ambient glow.
+            The grid pattern above and this hairline carry the backdrop now. */}
+        <div className="absolute inset-x-6 top-28 h-px bg-foreground/10 lg:inset-x-12" />
       </div>
 
-      {/* Floating icons - subtle */}
+      {/* Oversized "K" mark. Scroll layer wraps float layer → single writer each.
+          Sits behind content (z-0) at low opacity, so text stays fully legible. */}
       <div
-        ref={floatingIconsRef}
-        className="absolute inset-0 pointer-events-none z-0"
+        ref={glyphScrollRef}
+        aria-hidden="true"
+        className="pointer-events-none absolute right-[-6vw] top-1/2 z-0 -translate-y-1/2 select-none"
       >
-        <Code className="absolute top-[20%] left-[8%] w-7 h-7 text-primary/15" />
-        <Zap className="absolute bottom-[25%] right-[12%] w-8 h-8 text-primary/10" />
-        <Sparkles className="absolute top-[45%] right-[18%] w-5 h-5 text-primary/20" />
-        <div className="absolute bottom-[35%] left-[6%] w-10 h-10 border border-primary/10 rounded-full" />
-        <div className="absolute top-[65%] left-[88%] w-2 h-2 bg-primary/20 rounded-full" />
-        <div className="absolute top-[30%] left-[85%] w-1.5 h-1.5 bg-primary/30 rounded-full" />
+        <div
+          ref={glyphRef}
+          className="font-serif italic leading-none text-primary/[0.06] text-[46vw] lg:text-[32vw]"
+        >
+          K
+        </div>
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto w-full">
-        {/* Role label with fade-in */}
-        <div className="mb-6 overflow-hidden">
-          <p className="text-primary text-sm font-semibold tracking-[0.2em] uppercase">
-            {personalInfo.tagline}
-          </p>
-        </div>
-
-        {/* Main heading with parallax */}
-        <h1
-          ref={headingRef}
-          className="text-[clamp(2.8rem,8vw,6rem)] font-bold leading-[1.05] tracking-[-0.02em] mb-6 max-w-4xl"
-          style={{
-            transform: `translateX(${mousePosition.x * -0.2}px) translateY(${mousePosition.y * -0.1}px)`,
-          }}
-        >
-          Full-stack
-          <br />
-          <span className="relative inline-block">
-            <span className="text-primary relative z-10">Developer</span>
-            <span className="absolute bottom-1 left-0 w-full h-2 bg-primary/10 -z-0 rounded-full" />
-          </span>
-          <span className="text-muted-foreground">.</span>
-        </h1>
-
-        {/* Subtitle */}
-        <p
-          ref={subRef}
-          className="text-base md:text-lg text-muted-foreground max-w-xl leading-relaxed mb-8"
-          style={{
-            transform: `translateX(${mousePosition.x * -0.3}px) translateY(${mousePosition.y * -0.2}px)`,
-          }}
-        >
-          {personalInfo.positioning}
-        </p>
-
-        {/* CTA buttons */}
-        <div
-          ref={ctaRef}
-          className="flex flex-wrap gap-4 mb-20"
-          style={{
-            transform: `translateY(${mousePosition.y * -0.2}px)`,
-          }}
-        >
-          <a
-            href={personalInfo.calendlyUrl}
-            className="group relative inline-flex items-center gap-2 px-6 py-2.5 bg-primary text-primary-foreground rounded-md font-medium transition-all duration-300 hover:shadow-md hover:-translate-y-0.5"
-            onClick={() => trackBookACall("hero")}
-          >
-            Book a Call
-            <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-          </a>
-          <a
-            href="#projects"
-            className="inline-flex items-center gap-2 px-6 py-2.5 border border-border rounded-md text-foreground hover:bg-primary/5 hover:border-primary/40 transition-all duration-300 hover:-translate-y-0.5"
-          >
-            View Work
-          </a>
-        </div>
-
-        {/* Stats */}
-        <div
-          ref={statsRef}
-          className="flex flex-wrap gap-8 border-t border-border/40 pt-8"
-          aria-label="Key statistics"
-        >
-          {personalInfo.stats.map((stat) => (
+      <div className="relative z-10 mx-auto w-full max-w-7xl">
+        <div ref={parallaxRef}>
+          <div ref={mouseLayerRef} className="will-change-transform">
+            {/* Eyebrow — mono meta label, decoded on view, + availability pill */}
             <div
-              key={stat.label}
-              className="group"
-              style={{
-                transform: `translateY(${mousePosition.y * -0.05}px)`,
-              }}
+              ref={eyebrowRef}
+              className="mb-7 flex flex-wrap items-center gap-x-4 gap-y-3"
             >
-              <p className="text-2xl md:text-3xl font-bold text-foreground tabular-nums">
-                <span className="stat-value" data-target={parseInt(stat.value, 10)}>
-                  0
-                </span>
-                {stat.value.includes("+") ? "+" : ""}
-              </p>
-              <p className="text-xs text-muted-foreground mt-1 group-hover:text-primary transition-colors">
-                {stat.label}
-              </p>
+              <span className="flex items-center gap-2.5 nb-label">
+                <span className="inline-block h-2 w-2 bg-secondary" />
+                <ScrambleOnView text={personalInfo.tagline} />
+              </span>
+              <span
+                className="inline-flex items-center gap-2 border-2 border-foreground bg-secondary px-2.5 py-1 font-mono text-[0.62rem] font-semibold uppercase tracking-[0.18em] text-foreground"
+              >
+                <span className="inline-block h-1.5 w-1.5 animate-pulse bg-primary" />
+                Available for work
+              </span>
             </div>
-          ))}
-        </div>
 
-        {/* Scroll indicator */}
-        <div
-          ref={arrowRef}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-muted-foreground cursor-pointer"
-          aria-hidden="true"
-          onClick={() => {
-            document.getElementById("about")?.scrollIntoView({ behavior: "smooth" });
-          }}
-        >
-          <span className="text-[11px] tracking-[0.2em] uppercase font-mono opacity-70">
-            Scroll
-          </span>
-          <ChevronDown className="w-4 h-4 animate-bounce" />
+            {/* Display heading — word-arrive stagger, one solid-lime accent word */}
+            <h1 className="max-w-5xl font-serif font-medium leading-[1.04] tracking-[-0.02em] text-[clamp(2.6rem,8.5vw,6.5rem)]">
+              {HEADLINE.map((word, i) => (
+                <span
+                  key={`${word.text}-${i}`}
+                  className="mr-[0.28em] inline-block"
+                >
+                  {word.accent ? (
+                    // Highlight block: lime fill, ink text, hard shadow. The fill
+                    // is a separate layer so it can wipe in behind the glyphs.
+                    <span className="relative inline-block px-[0.18em] text-[hsl(var(--secondary-foreground))]">
+                      <span
+                        className="hero-accent-fill absolute inset-0 -z-10 border-2 border-foreground bg-secondary"
+                        aria-hidden="true"
+                      />
+                      <span className="hero-word inline-block not-italic">
+                        {word.text}
+                      </span>
+                    </span>
+                  ) : (
+                    <span
+                      className={`hero-word inline-block ${
+                        word.dim ? "text-muted-foreground/80" : ""
+                      }`}
+                    >
+                      {word.text}
+                    </span>
+                  )}
+                </span>
+              ))}
+            </h1>
+
+            {/* Subtitle */}
+            <p
+              ref={subRef}
+              className="mt-8 max-w-xl text-lg leading-relaxed text-muted-foreground md:text-xl"
+            >
+              {personalInfo.positioning}
+            </p>
+
+            {/* Tech chips — hard-shadow tags */}
+            <div ref={tagsRef} className="mt-8 flex flex-wrap gap-3">
+              {TAGS.map((tag) => (
+                <span
+                  key={tag}
+                  className="border-2 border-foreground bg-background-light px-3 py-1.5 font-mono text-xs font-medium uppercase tracking-wider text-foreground"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+
+            {/* CTAs — magnetic primary (→ work), outline secondary (→ call) */}
+            <div ref={ctaRef} className="mt-10 flex flex-wrap items-center gap-4">
+              <Magnetic strength={0.3} radius={80}>
+                <Link href="/projects" className="nb-btn group">
+                  View Work
+                  <ArrowUpRight className="h-4 w-4 transition-transform duration-200 ease-out group-hover:translate-x-0.5 group-" />
+                </Link>
+              </Magnetic>
+              <Magnetic strength={0.3} radius={80}>
+                <a
+                  href={personalInfo.hireWhatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => trackHireMeNow("hero")}
+                  className="nb-btn nb-btn--outline group"
+                >
+                  Hire me now
+                  <span className="font-mono transition-transform duration-200 ease-out group-hover:translate-x-0.5">
+                    ↗
+                  </span>
+                </a>
+              </Magnetic>
+            </div>
+
+            {/* Stats — editorial ledger row */}
+            <div
+              ref={statsRef}
+              className="mt-16 flex flex-wrap gap-x-12 gap-y-6 border-t-2 border-foreground/80 pt-8"
+              aria-label="Key statistics"
+            >
+              {personalInfo.stats.map((stat) => {
+                const hasPlus = stat.value.includes("+");
+                const target = parseInt(stat.value, 10);
+                return (
+                  <div key={stat.label} className="group">
+                    <p className="font-serif text-4xl font-medium tabular-nums text-foreground md:text-5xl">
+                      <span
+                        className="stat-value"
+                        data-target={target}
+                        aria-hidden="true"
+                      >
+                        0
+                      </span>
+                      {hasPlus ? "+" : ""}
+                      <span className="sr-only">{stat.value}</span>
+                    </p>
+                    <p className="mt-2 font-mono text-[0.7rem] uppercase tracking-widest text-muted-foreground transition-colors group-hover:text-primary">
+                      {stat.label}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </div>
+      </div>
+
+      {/* Continue cue → About page. Reduced-motion drops the bounce via the wrapper. */}
+      <div
+        ref={arrowRef}
+        className="absolute bottom-8 left-1/2 z-10 -translate-x-1/2"
+      >
+        <Link
+          href="/about"
+          aria-label="Continue to About"
+          className="group flex flex-col items-center gap-2 text-muted-foreground transition-colors hover:text-primary motion-reduce:*:animate-none"
+        >
+          <span className="font-mono text-[0.65rem] uppercase tracking-[0.25em] opacity-70">
+            About
+          </span>
+          <ChevronDown className="h-4 w-4 animate-bounce" />
+        </Link>
       </div>
     </section>
   );

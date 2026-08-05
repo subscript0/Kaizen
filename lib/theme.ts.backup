@@ -1,0 +1,119 @@
+export type BaseMode   = 'dark' | 'light';
+export type AccentName = 'blue' | 'red' | 'green' | 'purple' | 'orange' | 'yellow' | 'grey' | 'cyan' | 'tan' | 'pink';
+
+export interface BaseTheme {
+  label: string;
+  background: string;
+  backgroundLight: string;
+  foreground: string;
+  muted: string;
+  mutedForeground: string;
+  border: string;
+}
+
+export interface AccentTheme {
+  label: string;
+  swatch: string;
+  primary: string;
+  primaryHover: string;
+  secondary: string;
+  ring: string;
+}
+
+export const baseModes: Record<BaseMode, BaseTheme> = {
+  // Warm "paper" — editorial cream/ink (Fluxly-inspired)
+  light: {
+    label: 'Paper',
+    background:      '48 33% 97%',   // #fbfaf6 warm cream
+    backgroundLight: '41 31% 94%',   // #f4f1ea deeper paper
+    foreground:      '48 7% 13%',    // #24231f warm ink
+    muted:           '44 16% 88%',   // soft warm fill
+    mutedForeground: '45 5% 44%',    // #77746b
+    border:          '44 16% 82%',   // #d8d4c9 hairline
+  },
+  // Warm dark — near-black paper, not techy blue
+  dark: {
+    label: 'Ink',
+    background:      '105 7% 11%',    // #1b1e1a warm black
+    backgroundLight: '100 8% 14%',    // raised surface
+    foreground:      '49 19% 90%',    // #eae8e0 warm off-white
+    muted:           '90 5% 18%',     // warm fill
+    mutedForeground: '52 4% 57%',     // #96958e
+    border:          '82 5% 23%',     // #3b3d37
+  },
+};
+
+export const accentThemes: Record<AccentName, AccentTheme> = {
+  blue: {
+    label: 'Blue', swatch: '#2563EB',
+    primary: '217 91% 60%', primaryHover: '217 91% 55%',
+    secondary: '40 97% 60%', ring: '217 91% 60%', // amber (complementary)
+  },
+  red: {
+    label: 'Red', swatch: '#EF4444',
+    primary: '0 84% 60%', primaryHover: '0 84% 54%',
+    secondary: '172 76% 55%', ring: '0 84% 60%', // teal (complementary)
+  },
+  green: {
+    label: 'Green', swatch: '#22C55E',
+    primary: '142 70% 45%', primaryHover: '142 70% 40%',
+    secondary: '326 82% 66%', ring: '142 70% 45%', // magenta (complementary)
+  },
+  purple: {
+    label: 'Purple', swatch: '#A855F7',
+    primary: '270 70% 60%', primaryHover: '270 70% 54%',
+    secondary: '50 97% 60%', ring: '270 70% 60%', // yellow (complementary)
+  },
+  orange: {
+    label: 'Vermilion', swatch: '#ff5a36',
+    primary: '11 100% 61%', primaryHover: '11 100% 55%',
+    secondary: '70 90% 63%', ring: '11 100% 61%', // lime secondary
+  },
+  yellow: {
+    label: 'Yellow', swatch: '#EAB308',
+    primary: '47 96% 53%', primaryHover: '47 96% 46%',
+    secondary: '258 80% 66%', ring: '47 96% 53%', // violet (complementary)
+  },
+  grey: {
+    label: 'Grey', swatch: '#94A3B8',
+    primary: '215 20% 65%', primaryHover: '215 20% 58%',
+    secondary: '38 84% 62%', ring: '215 20% 65%', // warm amber pop
+  },
+  cyan: {
+    label: 'Cyan', swatch: '#06B6D4',
+    primary: '189 94% 43%', primaryHover: '189 94% 37%',
+    secondary: '12 90% 64%', ring: '189 94% 43%', // coral (complementary)
+  },
+  tan: {
+    label: 'Tan', swatch: '#D4A574',
+    primary: '30 52% 64%', primaryHover: '30 52% 57%',
+    secondary: '180 52% 55%', ring: '30 52% 64%', // teal (complementary)
+  },
+  pink: {
+    label: 'Pink', swatch: '#EC4899',
+    primary: '330 81% 60%', primaryHover: '330 81% 54%',
+    secondary: '84 78% 60%', ring: '330 81% 60%', // lime (complementary)
+  },
+};
+
+export function buildCSSVars(base: BaseMode, accent: AccentName): Record<string, string> {
+  const b = baseModes[base];
+  const a = accentThemes[accent];
+  return {
+    '--background':           b.background,
+    '--background-light':     b.backgroundLight,
+    '--foreground':           b.foreground,
+    '--muted':                b.muted,
+    '--muted-foreground':     b.mutedForeground,
+    '--border':               b.border,
+    '--ring':                 a.ring,
+    '--primary':              a.primary,
+    '--primary-hover':        a.primaryHover,
+    '--primary-foreground':   '0 0% 100%',
+    '--secondary':            a.secondary,
+    '--secondary-foreground': '48 7% 13%', // dark ink (readable on bright lime/secondary)
+  };
+}
+
+export const DEFAULT_BASE:   BaseMode   = 'light';
+export const DEFAULT_ACCENT: AccentName = 'orange';

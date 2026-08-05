@@ -8,19 +8,19 @@ const config: Config = {
     './app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
-    screens: {
-      xs: '420px',
-      sm: '640px',
-      md: '768px',
-      lg: '1024px',
-      xl: '1280px',
-      '2xl': '1536px',
-    },
     extend: {
+      // Motion.dev-inspired color palette (dark theme). Hyphenated keys match
+      // how these are actually referenced across components (`bg-background-light`,
+      // `text-muted-foreground`) — the old underscored keys silently produced no
+      // utility at all, which is why cards/dimmed text were invisible sitewide.
       colors: {
         background: 'hsl(var(--background))',
         'background-light': 'hsl(var(--background-light))',
         foreground: 'hsl(var(--foreground))',
+        muted: {
+          DEFAULT: 'hsl(var(--foreground-muted))',
+          foreground: 'hsl(var(--foreground-muted))',
+        },
         primary: {
           DEFAULT: 'hsl(var(--primary))',
           foreground: 'hsl(var(--primary-foreground))',
@@ -29,38 +29,80 @@ const config: Config = {
           DEFAULT: 'hsl(var(--secondary))',
           foreground: 'hsl(var(--secondary-foreground))',
         },
-        muted: {
-          DEFAULT: 'hsl(var(--muted))',
-          foreground: 'hsl(var(--muted-foreground))',
+        accent: {
+          DEFAULT: 'hsl(var(--accent))',
+          foreground: 'hsl(var(--accent-foreground))',
         },
         border: 'hsl(var(--border))',
         ring: 'hsl(var(--ring))',
-        success: 'hsl(var(--success))',
-        warning: 'hsl(var(--warning))',
-        error: 'hsl(var(--error))',
       },
+
+      // Motion.design inspired typography
       fontFamily: {
-        sans: ['var(--font-geist-sans)', 'sans-serif'],
-        mono: ['var(--font-geist-mono)', 'monospace'],
+        sans: ['var(--font-sans)', 'ui-sans-serif', 'system-ui'],
+        mono: ['var(--font-mono)', 'ui-monospace', 'monospace'],
+      },
+
+      // Motion-inspired typography scale
+      fontSize: {
+        xs: ['0.75rem', { lineHeight: '1rem' }],
+        sm: ['0.875rem', { lineHeight: '1.25rem' }],
+        base: ['1rem', { lineHeight: '1.5rem' }],
+        lg: ['1.125rem', { lineHeight: '1.75rem' }],
+        xl: ['1.25rem', { lineHeight: '1.75rem' }],
+        '2xl': ['1.5rem', { lineHeight: '2rem' }],
+        '3xl': ['1.875rem', { lineHeight: '2.25rem' }],
+        '4xl': ['2.25rem', { lineHeight: '2.5rem' }],
+      },
+
+      // Sharp corners, everywhere, no exceptions. Every `rounded-*` utility —
+      // including `rounded-full` — resolves to 0 so a stray class in any
+      // component can never reintroduce a radius. This is the enforcement
+      // point for the Swiss direction; don't relax it per-component.
+      borderRadius: {
+        none: '0px',
+        sm: '0px',
+        md: '0px',
+        lg: '0px',
+        xl: '0px',
+        '2xl': '0px',
+        '3xl': '0px',
+        full: '0px',
+        DEFAULT: '0px',
+      },
+
+      // Likewise: no drop-shadows. The style communicates depth with hairline
+      // rules and whitespace, so `shadow-*` utilities collapse to nothing.
+      boxShadow: {
+        none: 'none',
+        sm: 'none',
+        md: 'none',
+        lg: 'none',
+        xl: 'none',
+        '2xl': 'none',
+        inner: 'none',
+        DEFAULT: 'none',
+      },
+
+      // Motion-inspired easing
+      keyframes: {
+        float: {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-10px)' },
+        },
+        shuffle: {
+          '0%': { transform: 'translateX(0)' },
+          '50%': { transform: 'translateX(50px)' },
+          '100%': { transform: 'translateX(0)' },
+        },
       },
       animation: {
-        'fade-in': 'fadeIn 0.5s ease-in-out',
-        'slide-up': 'slideUp 0.6s ease-out',
-        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-      },
-      keyframes: {
-        fadeIn: {
-          '0%': { opacity: '0' },
-          '100%': { opacity: '1' },
-        },
-        slideUp: {
-          '0%': { opacity: '0', transform: 'translateY(20px)' },
-          '100%': { opacity: '1', transform: 'translateY(0)' },
-        },
+        float: 'float 6s ease-in-out infinite',
+        shuffle: 'shuffle 4s ease-in-out infinite',
       },
     },
   },
-  plugins: [require('@tailwindcss/typography')],
+  plugins: [],
 };
 
 export default config;

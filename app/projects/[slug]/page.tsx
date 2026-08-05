@@ -3,7 +3,6 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { projects } from '@/lib/data';
-import Footer from '@/components/Footer';
 
 export async function generateStaticParams() {
   return projects.map((p) => ({ slug: p.slug }));
@@ -107,7 +106,7 @@ export default async function ProjectPage({
           <div className="flex flex-wrap gap-2">
             {project.techStack.map((tech) => (
               <span key={tech}
-                className="px-3 py-1.5 text-sm border border-border rounded-full text-muted-foreground bg-background-light">
+                className="px-3 py-1.5 text-sm border border-border rounded-sm text-muted-foreground bg-background-light">
                 {tech}
               </span>
             ))}
@@ -173,7 +172,6 @@ export default async function ProjectPage({
           </Link>
         </div>
       </article>
-      <Footer />
     </>
   );
 }

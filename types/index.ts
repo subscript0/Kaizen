@@ -29,7 +29,13 @@ export interface Experience {
 
 export interface Skill {
   name: string;
-  logo: string;
+  /**
+   * Optional, and currently unset everywhere. The old entries all pointed into
+   * `public/logo/`, which does not exist in the repo, so anything that rendered
+   * one would have shown a broken image. Brand artwork now comes from the
+   * inlined marks in `components/skills/marks.ts` instead.
+   */
+  logo?: string;
 }
 
 export interface SkillCategory {

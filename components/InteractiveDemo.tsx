@@ -1,5 +1,4 @@
 'use client';
-
 import { useState, useEffect, useRef } from 'react';
 import {
   AreaChart,
@@ -10,6 +9,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
+import { useReveal } from '@/lib/motion';
 
 // ── Stable seed data (identical on server + client first render) ──
 const SEED_DATA = [
@@ -44,6 +44,12 @@ const aiResponses = [
   'Top acquisition channel this month: LinkedIn organic (+34%). Paid search ROI declined to 2.1x — consider budget reallocation.',
 ];
 
+// Chart palette resolves against the live CSS tokens so it tracks
+// the paper/ink theme instead of a hardcoded blue.
+const PRIMARY = 'hsl(var(--primary))';
+const GRID = 'hsl(var(--border))';
+const AXIS = 'hsl(var(--muted-foreground))';
+
 export default function InteractiveDemo() {
   // Initialise with stable seed — no Math.random() at construction time
   const [data, setData] = useState(SEED_DATA);
@@ -52,6 +58,11 @@ export default function InteractiveDemo() {
   const [loading, setLoading] = useState(false);
   const [tick, setTick] = useState(0);
   const mounted = useRef(false);
+  const sectionRef = useRef<HTMLElement>(null);
+
+  // Editorial rise-and-fade on the header/widget. Reduced-motion safe
+  // and scoped so it never touches the live-ticking chart internals.
+  useReveal(sectionRef, '[data-reveal]', { start: 'top 85%' });
 
   // Start live updates only after hydration is complete
   useEffect(() => {
@@ -87,47 +98,61 @@ export default function InteractiveDemo() {
 
   return (
     <section
+      ref={sectionRef}
       id="demo"
-      className="py-24 px-6 lg:px-12 max-w-7xl mx-auto"
+      className="py-24 px-6 lg:px-12 max-w-96 mx-auto"
       aria-labelledby="demo-heading"
     >
-      <p className="section-number mb-4">Live Preview</p>
-      <h2 id="demo-heading" className="section-title mb-4">
+      <p className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-primary" data-reveal>
+        04 — Interactive Demo
+      </p>
+      <h2
+        id="demo-heading"
+        className="mb-6 text-[clamp(1.5rem,5vw,2.5rem)] font-extrabold leading-none text-foreground"
+        data-reveal
+      >
         See it in Action
       </h2>
-      <p className="text-muted-foreground max-w-xl mb-12 leading-relaxed">
+      <p
+        className="text-muted-foreground max-w-xl mb-12 leading-relaxed"
+        data-reveal
+      >
         A sample of the kind of real-time dashboards I build — interactive data
         visualisation with an AI insight layer.
       </p>
 
-      <div className="demo-widget max-w-5xl">
-        {/* Window chrome */}
-        <div className="demo-widget__header">
-          <div className="demo-dot bg-red-500/70" />
-          <div className="demo-dot bg-yellow-500/70" />
-          <div className="demo-dot bg-green-500/70" />
-          <span className="ml-3 text-xs text-muted-foreground font-mono">
-            analytics-dashboard.tsx — live
+      <div className="demo-widget max-w-5xl" data-reveal>
+        {/* Window chrome — toned to the paper palette */}
+        <div className="demo-widget__header flex items-center gap-2">
+          <div className="demo-dot w-2 h-2 bg-primary/70" />
+          <div className="demo-dot w-2 h-2 bg-secondary" />
+          <div className="demo-dot w-2 h-2 bg-muted-foreground/40" />
+          <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
+            analytics-dashboard.tsx
           </span>
-          <span className="ml-auto flex items-center gap-1.5 text-xs text-green-400">
-            <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+          <span className="ml-auto flex items-center gap-1.5 font-mono text-[0.65rem] uppercase tracking-widest text-primary">
+            <span className="w-1.5 h-1.5 rounded bg-primary animate-pulse" />
             Live
           </span>
         </div>
 
         <div className="p-4 md:p-6 space-y-6">
-          {/* Metric cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {/* Metric cards — hairline tiles with mono readouts */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {metricCards.map((m) => (
               <div
                 key={m.label}
-                className="bg-background rounded-lg border border-border p-3"
+                className="card p-4 hover:border-primary/30 hover:shadow-sm"
               >
-                <p className="text-xs text-muted-foreground mb-1">{m.label}</p>
-                <p className="text-lg font-bold text-foreground">{m.value}</p>
+                <p className="font-mono text-[0.65rem] uppercase tracking-widest text-muted-foreground mb-2">
+                  {m.label}
+                </p>
+                <p className="font-mono text-xl font-medium text-foreground tabular-nums">
+                  {m.value}
+                </p>
                 <p
-                  className={`text-xs font-medium ${
-                    m.positive ? 'text-green-400' : 'text-red-400'
+                  className={`font-mono text-xs mt-1 tabular-nums ${
+                    m.positive ? 'text-primary' : 'text-muted-foreground'
                   }`}
                 >
                   {m.delta}
@@ -136,16 +161,18 @@ export default function InteractiveDemo() {
             ))}
           </div>
 
-          {/* Revenue chart */}
-          <div className="bg-background rounded-lg border border-border p-4">
+          {/* Revenue chart — vermilion on paper */}
+          <div className="card p-4">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <p className="text-xs text-muted-foreground">Total Revenue (7-mo)</p>
-                <p className="text-xl font-bold text-foreground">
+                <p className="font-mono text-[0.65rem] uppercase tracking-widest text-muted-foreground mb-1">
+                  Total Revenue · 7-mo
+                </p>
+                <p className="font-mono text-2xl font-medium text-foreground tabular-nums">
                   ${(totalRevenue / 1000).toFixed(1)}k
                 </p>
               </div>
-              <span className="text-xs text-primary bg-primary/10 px-2 py-1 rounded font-mono">
+              <span className="font-mono text-[0.65rem] uppercase tracking-widest text-primary bg-primary/10 px-2.5 py-1 rounded tabular-nums">
                 Tick #{tick}
               </span>
             </div>
@@ -154,41 +181,43 @@ export default function InteractiveDemo() {
                 <AreaChart data={data}>
                   <defs>
                     <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(217,91%,60%)" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="hsl(217,91%,60%)" stopOpacity={0} />
+                      <stop offset="5%" stopColor={PRIMARY} stopOpacity={0.25} />
+                      <stop offset="95%" stopColor={PRIMARY} stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid
                     strokeDasharray="3 3"
-                    stroke="hsl(220,13%,20%)"
+                    stroke={GRID}
                     vertical={false}
                   />
                   <XAxis
                     dataKey="month"
-                    tick={{ fill: 'hsl(220,9%,65%)', fontSize: 11 }}
+                    tick={{ fill: AXIS, fontSize: 11 }}
                     axisLine={false}
                     tickLine={false}
                   />
                   <YAxis
-                    tick={{ fill: 'hsl(220,9%,65%)', fontSize: 11 }}
+                    tick={{ fill: AXIS, fontSize: 11 }}
                     axisLine={false}
                     tickLine={false}
                     tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`}
                   />
                   <Tooltip
+                    cursor={{ stroke: GRID }}
                     contentStyle={{
-                      background: 'hsl(222,18%,12%)',
-                      border: '1px solid hsl(220,13%,20%)',
-                      borderRadius: '6px',
+                      background: 'hsl(var(--background-light))',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: 'var(--radius)',
                       fontSize: '12px',
-                      color: 'hsl(220,13%,91%)',
+                      color: 'hsl(var(--foreground))',
                     }}
+                    labelStyle={{ color: 'hsl(var(--muted-foreground))' }}
                     formatter={(v: number) => [`$${v.toLocaleString()}`, 'Revenue']}
                   />
                   <Area
                     type="monotone"
                     dataKey="revenue"
-                    stroke="hsl(217,91%,60%)"
+                    stroke={PRIMARY}
                     strokeWidth={2}
                     fill="url(#colorRevenue)"
                     animationDuration={600}
@@ -198,9 +227,9 @@ export default function InteractiveDemo() {
             </div>
           </div>
 
-          {/* AI Prompt Input */}
-          <div className="bg-background rounded-lg border border-border p-4">
-            <p className="text-xs text-primary font-semibold tracking-widest uppercase mb-3">
+          {/* AI Prompt Input — crisp field with vermilion submit */}
+          <div className="card p-4">
+            <p className="font-mono text-[0.65rem] uppercase tracking-widest text-primary mb-3">
               AI Analyst
             </p>
             <div className="flex gap-2 mb-3">
@@ -209,14 +238,14 @@ export default function InteractiveDemo() {
                 value={aiInput}
                 onChange={(e) => setAiInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleAiSubmit()}
-                placeholder='Ask the AI about your data… e.g. &quot;Why did churn drop?&quot;'
-                className="flex-1 bg-background-light border border-border rounded px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors min-h-[44px]"
+                placeholder='Ask the AI about your data… e.g. "Why did churn drop?"'
+                className="flex-1 input w-full placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                 aria-label="AI query input"
               />
               <button
                 onClick={handleAiSubmit}
                 disabled={loading}
-                className="btn-primary text-sm px-4 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="btn btn-primary btn-fx-sweep text-sm px-4 disabled:opacity-50 disabled:cursor-not-allowed"
                 aria-label="Submit AI query"
               >
                 {loading ? (
@@ -241,15 +270,15 @@ export default function InteractiveDemo() {
             </div>
 
             {aiOutput && (
-              <div className="bg-primary/5 border border-primary/20 rounded px-4 py-3 text-sm text-foreground/90 leading-relaxed">
-                <span className="text-primary font-semibold mr-2">↳</span>
+              <div className="alert alert-info text-sm">
+                <span className="font-serif text-primary mr-2">↳</span>
                 {aiOutput}
               </div>
             )}
 
             {!aiOutput && !loading && (
               <p className="text-xs text-muted-foreground">
-                Try: &ldquo;What drove growth this month?&rdquo; or &ldquo;Identify churn risk&rdquo;
+                Try: &apos;What drove growth this month?&apos; or &apos;Identify churn risk&apos;
               </p>
             )}
           </div>

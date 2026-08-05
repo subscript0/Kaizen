@@ -5,6 +5,7 @@ import type {
   Testimonial,
   SocialLink,
 } from '@/types';
+import { capabilities } from '@/components/skills/capabilities';
 
 // ========== CONTENTLAYER / SANITY PLACEHOLDER ==========
 // To move to a CMS, replace these arrays with fetch() calls.
@@ -18,7 +19,18 @@ export const personalInfo = {
   positioning:
     'I help SaaS and fintech companies ship high-performance, conversion-optimised interfaces.',
   email: 'chiemeried321@gmail.com',
-  calendlyUrl: 'https://calendly.com/chiemeried321/30min', // Replace with your Calendly URL
+  /** The single WhatsApp line every "Hire me now" CTA opens. */
+  whatsappNumber: '2349117564724',
+  /**
+   * Primary CTA target. Built with the same `api.whatsapp.com/send` shape the
+   * idea form already uses, so it hands off to the installed app on mobile and
+   * to WhatsApp Web on desktop rather than dead-ending on a `wa.me` redirect.
+   * The message is pre-filled so the first line of the chat already says why.
+   */
+  hireWhatsappUrl:
+    'https://api.whatsapp.com/send/?phone=2349117564724&text=' +
+    encodeURIComponent("Hi Kaizen — I'd like to hire you. Are you free to talk?") +
+    '&type=phone_number&app_absent=0',
   upworkUrl: 'https://www.upwork.com/freelancers/~01f6ce82d55eb7345d?mp_source=share', // Replace with your Upwork profile
   whatsappGroupUrl: 'https://chat.whatsapp.com/DxS7V5kzZhC0WRyjwQXCCG', // ← replace with real link
   stats: [
@@ -139,81 +151,102 @@ export const projects: Project[] = [
 export const experiences: Experience[] = [
   {
     id: 1,
-    company: 'Personal Projects / Freelance',
-    role: 'Frontend Engineer',
-    duration: '2024 – Present',
+    company: 'Personal Projects / Independent Development',
+    role: 'Full-Stack Developer',
+    duration: '2023 – Present',
     description:
-      'Building and refining frontend systems for web applications with a focus on performance, scalability, and clean architecture. Working independently on real-world projects, translating ideas into production-ready interfaces.',
+      'Designing and developing end-to-end web applications from concept to deployment. Working across frontend, backend, databases, and cloud infrastructure to build scalable, maintainable, and user-focused products.',
     highlights: [
-      'Developed responsive dashboards with dynamic data rendering and optimized state management',
-      'Improved load performance using code splitting, lazy loading, and asset optimization techniques',
-      'Designed reusable component structures to maintain consistency across multiple projects',
+      'Built responsive web applications using React, Next.js, TypeScript, JavaScript, HTML, CSS, and Tailwind CSS',
+      'Developed scalable backend services and REST APIs with Node.js, Express, PHP, and Python',
+      'Designed and managed SQL and NoSQL databases using PostgreSQL, Neon, MongoDB, Supabase, and Firebase',
+      'Integrated authentication, real-time features, database management, and third-party APIs',
+      'Optimized applications through code splitting, lazy loading, caching, and performance optimization',
+      'Deployed and managed applications using Docker, Git, GitHub, Linux, and AWS',
     ],
   },
   {
     id: 2,
-    company: 'Self-Directed Learning / Projects',
-    role: 'UI Engineer',
-    duration: '2023 – 2024',
+    company: 'Product Design & Development',
+    role: 'Product Engineer',
+    duration: '2026 – Present',
     description:
-      'Focused on mastering modern frontend development by building and iterating on multiple UI-heavy applications. Emphasis on design precision, usability, and developer workflow.',
+      'Designing and building complete digital products from concept to deployment. Combining product strategy, modern UI design, and engineering to create intuitive, scalable, and high-performance digital experiences.',
     highlights: [
-      'Built and deployed interactive web interfaces, including chat-style UIs and productivity tools',
-      'Achieved high performance and accessibility standards through testing and optimization',
-      'Created reusable UI components and documented them for scalability and reuse',
+      'Designed complete product experiences using Figma',
+      'Created user flows, wireframes, interactive prototypes, and scalable design systems',
+      'Built reusable design systems and component libraries',
+      'Designed responsive interfaces for web and mobile applications',
+      'Focused on usability, accessibility, consistency, and polished user experiences',
+      'Collaborated between design thinking and implementation to create production-ready products',
+    ],
+  },
+  {
+    id: 3,
+    company: 'Infrastructure & Deployment',
+    role: 'Cloud, DevOps & Infrastructure',
+    duration: '2025 – Present',
+    description:
+      'Building practical experience with cloud infrastructure, Linux systems, containerization, deployment workflows, and modern development environments.',
+    highlights: [
+      'Deploying applications and services on AWS',
+      'Using Docker for containerized development and deployment',
+      'Managing projects with Git and GitHub',
+      'Working daily in Linux environments',
+      'Configuring development environments and deployment workflows',
+      'Learning modern infrastructure and cloud engineering practices',
+    ],
+  },
+  {
+    id: 4,
+    company: 'Security Research & Hands-on Learning',
+    role: 'Cybersecurity',
+    duration: '2025 – Present',
+    description:
+      'Expanding my understanding of cybersecurity through practical labs, Linux administration, networking, and secure software development.',
+    highlights: [
+      'Working extensively in Linux environments',
+      'Learning networking fundamentals and web security',
+      'Exploring OSINT and security research techniques',
+      'Practicing secure development principles',
+      'Studying system administration and infrastructure security',
+      'Continuously improving security knowledge through hands-on experimentation',
+    ],
+  },
+  {
+    id: 5,
+    company: 'Continuous Learning & Engineering',
+    role: 'Open Source & Personal Projects',
+    duration: '2024 – Present',
+    description:
+      'Building projects to explore new technologies, strengthen engineering skills, and solve real-world problems through modern software development.',
+    highlights: [
+      'Built full-stack applications, dashboards, developer tools, and productivity platforms',
+      'Explored cross-platform development with React Native',
+      'Worked across frontend, backend, databases, cloud, and product design',
+      'Experimented with scalable architectures, reusable components, and modern development workflows',
+      'Continuously refined coding standards, software architecture, and engineering best practices',
     ],
   },
 ];
 
 
 // ── Skills ────────────────────────────────────────────
-export const skills: SkillCategory[] = [
-  {
-    category: 'frontend',
-    items: [
-      { name: 'JavaScript', logo: '/logo/js.png' },
-      { name: 'TypeScript', logo: '/logo/ts.png' },
-      { name: 'React', logo: '/logo/react.png' },
-      { name: 'Next.js', logo: '/logo/next.png' },
-      { name: 'Redux', logo: '/logo/redux.png' },
-      { name: 'Tailwind CSS', logo: '/logo/tailwind.png' },
-      { name: 'GSAP', logo: '/logo/gsap.png' },
-      { name: 'Framer Motion', logo: '/logo/framer-motion.png' },
-    ],
-  },
-  {
-    category: 'backend',
-    items: [
-      { name: 'Node.js', logo: '/logo/node.png' },
-      { name: 'Express.js', logo: '/logo/express.png' },
-      { name: 'tRPC', logo: '/logo/trpc.png' },
-    ],
-  },
-  {
-    category: 'database',
-    items: [
-      { name: 'PostgreSQL', logo: '/logo/postgreSQL.png' },
-      { name: 'MongoDB', logo: '/logo/mongodb.svg' },
-      { name: 'Prisma', logo: '/logo/prisma.png' },
-    ],
-  },
-  {
-    category: 'AI/ML',
-    items: [
-      { name: 'LangChain', logo: '/logo/langchain.png' },
-      { name: 'OpenAI API', logo: '/logo/openai.png' },
-      { name: 'Vector DBs', logo: '/logo/vectordb.png' },
-    ],
-  },
-  {
-    category: 'tools',
-    items: [
-      { name: 'Git', logo: '/logo/git.png' },
-      { name: 'Docker', logo: '/logo/docker.svg' },
-      { name: 'AWS', logo: '/logo/aws.png' },
-    ],
-  },
-];
+/**
+ * DERIVED, not authored. The disciplines and their tools live in
+ * `components/skills/capabilities.ts`, which /skills already reads for its
+ * chapters, notes and brand marks.
+ *
+ * They used to be two hand-maintained lists, and they drifted: this array was
+ * still advertising Redux, tRPC, Prisma and an AI/ML section on the home page
+ * after /skills had been rewritten around the real stack. Deriving costs one
+ * import and makes that class of bug impossible — add a tool in one place and
+ * both surfaces show it.
+ */
+export const skills: SkillCategory[] = capabilities.map((capability) => ({
+  category: capability.id,
+  items: capability.techs.map((tech) => ({ name: tech.name })),
+}));
 
 // ── Testimonials ──────────────────────────────────────
 export const testimonials: Testimonial[] = [

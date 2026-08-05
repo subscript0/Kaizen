@@ -1,5 +1,5 @@
 export type BaseMode   = 'dark' | 'light';
-export type AccentName = 'blue' | 'red' | 'green' | 'purple' | 'orange' | 'yellow' | 'grey' | 'cyan' | 'tan' | 'pink';
+export type AccentName = 'yellow';
 
 export interface BaseTheme {
   label: string;
@@ -9,6 +9,16 @@ export interface BaseTheme {
   muted: string;
   mutedForeground: string;
   border: string;
+  /** Neutral chip fill — always the INVERSE of the surface, in both modes. */
+  secondary: string;
+  secondaryForeground: string;
+  /**
+   * The accent used as TEXT. Pure #FBD509 on a near-white page is ~1.5:1 —
+   * unreadable — so light mode sets type in a dark amber that still reads as
+   * "the yellow", while dark mode keeps the yellow itself. Fills (buttons,
+   * progress bars, dots) keep using `--primary` in both modes; only ink swaps.
+   */
+  primaryInk: string;
 }
 
 export interface AccentTheme {
@@ -16,102 +26,81 @@ export interface AccentTheme {
   swatch: string;
   primary: string;
   primaryHover: string;
-  secondary: string;
   ring: string;
 }
 
 export const baseModes: Record<BaseMode, BaseTheme> = {
-  dark: {
-    label: 'Dark',
-    background:      '222 20% 8%',
-    backgroundLight: '222 18% 12%',
-    foreground:      '220 13% 91%',
-    muted:           '220 9% 20%',
-    mutedForeground: '220 9% 65%',
-    border:          '220 13% 20%',
-  },
+  // Light mode — paper, not "inverted dark". The page is a neutral off-white
+  // and surfaces sit ABOVE it in pure white (in dark mode surfaces also sit
+  // above the page, just by getting lighter — same rule, not a mirror).
   light: {
     label: 'Light',
-    background:      '210 20% 97%',
-    backgroundLight: '210 20% 92%',
-    foreground:      '222 20% 10%',
-    muted:           '210 20% 86%',
-    mutedForeground: '215 16% 46%',
-    border:          '214 32% 82%',
+    background:          '0 0% 97%',    // #f7f7f7 — paper
+    backgroundLight:     '0 0% 100%',   // #ffffff — surfaces lift off the page
+    foreground:          '0 0% 9%',     // #171717 — ink, 16.6:1 on paper
+    muted:               '0 0% 88%',    // #e0e0e0
+    mutedForeground:     '0 0% 38%',    // #616161 — 5.5:1, passes AA
+    border:              '0 0% 84%',    // #d6d6d6 — hairline that survives paper
+    secondary:           '0 0% 12%',    // ink chip
+    secondaryForeground: '0 0% 97%',
+    primaryInk:          '44 100% 27%', // #8a6700 — 4.7:1 on paper
+  },
+  // Dark mode — Motion.design values, unchanged.
+  dark: {
+    label: 'Dark',
+    background:          '0 0% 3%',     // #080808
+    backgroundLight:     '0 0% 4%',     // #0a0a0a
+    foreground:          '60 3% 93%',   // #E6E6DC
+    muted:               '56 5% 56%',   // #909890
+    mutedForeground:     '56 5% 56%',   // #909890
+    border:              '0 0% 14%',    // #242424
+    secondary:           '0 0% 95%',    // paper chip
+    secondaryForeground: '0 0% 12%',
+    primaryInk:          '50 100% 60%', // the yellow itself — 13:1 on #080808
   },
 };
 
 export const accentThemes: Record<AccentName, AccentTheme> = {
-  blue: {
-    label: 'Blue', swatch: '#2563EB',
-    primary: '217 91% 60%', primaryHover: '217 91% 55%',
-    secondary: '200 95% 55%', ring: '217 91% 60%',
-  },
-  red: {
-    label: 'Red', swatch: '#EF4444',
-    primary: '0 84% 60%', primaryHover: '0 84% 54%',
-    secondary: '0 90% 70%', ring: '0 84% 60%',
-  },
-  green: {
-    label: 'Green', swatch: '#22C55E',
-    primary: '142 70% 45%', primaryHover: '142 70% 40%',
-    secondary: '160 84% 39%', ring: '142 70% 45%',
-  },
-  purple: {
-    label: 'Purple', swatch: '#A855F7',
-    primary: '270 70% 60%', primaryHover: '270 70% 54%',
-    secondary: '280 60% 65%', ring: '270 70% 60%',
-  },
-  orange: {
-    label: 'Orange', swatch: '#F97316',
-    primary: '25 95% 53%', primaryHover: '25 95% 47%',
-    secondary: '38 92% 50%', ring: '25 95% 53%',
-  },
   yellow: {
-    label: 'Yellow', swatch: '#EAB308',
-    primary: '47 96% 53%', primaryHover: '47 96% 46%',
-    secondary: '54 91% 60%', ring: '47 96% 53%',
-  },
-  grey: {
-    label: 'Grey', swatch: '#94A3B8',
-    primary: '215 20% 65%', primaryHover: '215 20% 58%',
-    secondary: '215 16% 75%', ring: '215 20% 65%',
-  },
-  cyan: {
-    label: 'Cyan', swatch: '#06B6D4',
-    primary: '189 94% 43%', primaryHover: '189 94% 37%',
-    secondary: '196 100% 47%', ring: '189 94% 43%',
-  },
-  tan: {
-    label: 'Tan', swatch: '#D4A574',
-    primary: '30 52% 64%', primaryHover: '30 52% 57%',
-    secondary: '25 60% 72%', ring: '30 52% 64%',
-  },
-  pink: {
-    label: 'Pink', swatch: '#EC4899',
-    primary: '330 81% 60%', primaryHover: '330 81% 54%',
-    secondary: '316 72% 68%', ring: '330 81% 60%',
+    label: 'Yellow',
+    swatch: '#FBD509',
+    primary: '50 100% 60%',      // #FBD509
+    primaryHover: '50 100% 50%', // #E6C000
+    ring: '50 100% 60%',
   },
 };
 
 export function buildCSSVars(base: BaseMode, accent: AccentName): Record<string, string> {
   const b = baseModes[base];
-  const a = accentThemes[accent];
+  const a = accentThemes[accent] ?? accentThemes.yellow;
   return {
     '--background':           b.background,
     '--background-light':     b.backgroundLight,
     '--foreground':           b.foreground,
-    '--muted':                b.muted,
+    // BOTH spellings. Components reference `--foreground-muted` (the globals
+    // component layer) and `--muted-foreground` (arbitrary Tailwind values)
+    // interchangeably; setting only one left the other pinned to the dark
+    // value forever, which is why light mode had 2.6:1 metadata type.
+    '--foreground-muted':     b.mutedForeground,
     '--muted-foreground':     b.mutedForeground,
+    '--muted':                b.muted,
     '--border':               b.border,
+    '--input':                b.border,
     '--ring':                 a.ring,
     '--primary':              a.primary,
     '--primary-hover':        a.primaryHover,
-    '--primary-foreground':   '0 0% 100%',
-    '--secondary':            a.secondary,
-    '--secondary-foreground': '0 0% 100%',
+    '--primary-ink':          b.primaryInk,
+    // Near-black, ALWAYS. This was '0 0% 100%' — white type on #FBD509 is
+    // 1.4:1, i.e. every primary button on the site was illegible.
+    '--primary-foreground':   '0 0% 8%',
+    '--secondary':            b.secondary,
+    '--secondary-foreground': b.secondaryForeground,
+    // `--accent` is the neutral surface token (Tailwind maps `accent` to it).
+    // It was never set here, so light mode inherited the dark value.
+    '--accent':               b.backgroundLight,
+    '--accent-foreground':    b.foreground,
   };
 }
 
 export const DEFAULT_BASE:   BaseMode   = 'dark';
-export const DEFAULT_ACCENT: AccentName = 'blue';
+export const DEFAULT_ACCENT: AccentName = 'yellow';

@@ -1,105 +1,56 @@
-"use client";
-import { useEffect, useRef } from 'react';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+'use client';
+
+import { useRef } from 'react';
 import { testimonials } from '@/lib/data';
-import { User, X, Minimize2, Maximize2 } from 'lucide-react'; // removed Circle
+import { drawIn, gsap, revealOnScroll, useIsoLayoutEffect } from '@/lib/motion';
+import { CircularTestimonials } from '@/components/ui/circular-testimonials';
+import { useSectionIntro } from '@/components/motion/useSectionIntro';
+import SectionHead from '@/components/SectionHead';
 
-if (typeof window !== 'undefined') {
-  gsap.registerPlugin(ScrollTrigger);
-}
-
-interface Testimonial {
-  id: number;
-  content: string;
-  name: string;
-  role: string;
-  company: string;
-}
-
-const EditorBlock = ({ testimonial }: { testimonial: Testimonial }) => {
-  const lines = testimonial.content.split('\n');
-  const fileName = `${testimonial.name.toLowerCase().replace(/\s/g, '_')}_feedback.js`;
-
-  return (
-    <div className="rounded-lg overflow-hidden shadow-xl border border-gray-700 bg-[#1e1e1e] transition-all hover:shadow-2xl hover:border-gray-600">
-      <div className="flex items-center justify-between px-4 py-2 bg-[#2d2d2d] border-b border-gray-700">
-        <div className="flex items-center gap-2">
-          <div className="flex gap-1.5">
-            <div className="w-3 h-3 rounded-full bg-[#ff5f56] hover:bg-[#ff5f56]/80 transition-colors" />
-            <div className="w-3 h-3 rounded-full bg-[#ffbd2e] hover:bg-[#ffbd2e]/80 transition-colors" />
-            <div className="w-3 h-3 rounded-full bg-[#27c93f] hover:bg-[#27c93f]/80 transition-colors" />
-          </div>
-          <span className="ml-2 text-xs text-gray-400 font-mono">{fileName}</span>
-        </div>
-        <div className="flex gap-1 text-gray-400">
-          <Minimize2 className="w-3 h-3 hover:text-white cursor-pointer" />
-          <Maximize2 className="w-3 h-3 hover:text-white cursor-pointer" />
-          <X className="w-3 h-3 hover:text-white cursor-pointer" />
-        </div>
-      </div>
-
-      <div className="flex font-mono text-sm">
-        <div className="flex flex-col items-end px-3 py-4 bg-[#1e1e1e] text-gray-500 select-none border-r border-gray-800">
-          {lines.map((_, idx) => (
-            <div key={idx} className="leading-6">{idx + 1}</div>
-          ))}
-        </div>
-        <pre className="flex-1 py-4 px-3 overflow-x-auto">
-          <code className="text-gray-300 leading-6 whitespace-pre-wrap">
-            {lines.map((line, idx) => (
-              <div key={idx}>
-                {line.trim() === '' ? <br /> : <span className="text-[#9cdcfe]">{line}</span>}
-              </div>
-            ))}
-            <span className="inline-block w-2 h-4 bg-[#007acc] animate-pulse ml-0.5" />
-          </code>
-        </pre>
-      </div>
-
-      <div className="flex items-center justify-between px-4 py-1.5 bg-[#007acc] text-white text-xs border-t border-[#007acc]">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5">
-            <span className="font-mono">TypeScript</span>
-            <span className="text-white/70">|</span>
-            <span className="font-mono">UTF-8</span>
-          </div>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center">
-              <User className="w-3 h-3" />
-            </div>
-            <span className="font-medium">{testimonial.name}</span>
-            <span className="text-white/70">•</span>
-            <span>{testimonial.role}</span>
-            <span className="text-white/70">@</span>
-            <span>{testimonial.company}</span>
-          </div>
-          <span className="font-mono">Ln {lines.length}, Col 1</span>
-          <span className="font-mono">Spaces: 2</span>
-        </div>
-      </div>
-    </div>
-  );
+// The local /testimonials/*.jpg avatars 404, so we map each entry to a
+// known-good Unsplash portrait keyed by id (falls back to the first).
+const PORTRAITS: Record<number, string> = {
+  1: 'https://images.unsplash.com/photo-1512316609839-ce289d3eba0a?q=80&w=1368&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+  2: 'https://images.unsplash.com/photo-1628749528992-f5702133b686?q=80&w=1368&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fA%3D%3D',
 };
+const FALLBACK_PORTRAIT = PORTRAITS[1];
 
+// Adapt our data model → the shape CircularTestimonials expects.
+const items = testimonials.map((t) => ({
+  quote: t.content,
+  name: t.name,
+  designation: `${t.role} · ${t.company}`,
+  src: PORTRAITS[t.id] ?? FALLBACK_PORTRAIT,
+}));
+
+/**
+ * What clients say.
+ *
+ * The carousel itself owns its own motion (it lives in `components/ui`), so
+ * the work here is the frame around it: the header introduces itself in the
+ * site's shared order, a spec bar counts what you are looking at, and the
+ * whole block rises in once — deliberately less motion than the sections
+ * above it, because a testimonial is somebody else's words and a section that
+ * performs over them reads as a sales page.
+ */
 export default function Testimonials() {
   const sectionRef = useRef<HTMLElement>(null);
 
-  useEffect(() => {
+  useSectionIntro(sectionRef);
+
+  useIsoLayoutEffect(() => {
+    const section = sectionRef.current;
+    if (!section) return;
+
     const ctx = gsap.context(() => {
-      gsap.utils.toArray<HTMLElement>('.testimonial-card').forEach((card, i) => {
-        gsap.from(card, {
-          scrollTrigger: { trigger: card, start: 'top 88%' },
-          y: 40,
-          opacity: 0,
-          duration: 0.8,
-          delay: i * 0.15,
-          ease: 'power3.out',
-        });
-      });
-    }, sectionRef);
+      const cleanups: Array<() => void> = [];
+      cleanups.push(drawIn('[data-rule]', { duration: 0.8, stagger: 0.08, start: 'top 94%' }));
+      cleanups.push(
+        revealOnScroll('[data-reveal]', { y: 26, duration: 0.66, stagger: 0.1, start: 'top 88%' }),
+      );
+      return () => cleanups.forEach((c) => c());
+    }, section);
+
     return () => ctx.revert();
   }, []);
 
@@ -107,19 +58,64 @@ export default function Testimonials() {
     <section
       ref={sectionRef}
       id="testimonials"
-      className="py-24 px-6 lg:px-12 max-w-7xl mx-auto"
+      className="bg-background py-24"
       aria-labelledby="testimonials-heading"
     >
-      <p className="section-number mb-4">Social Proof</p>
-      <h2 id="testimonials-heading" className="section-title mb-16">
-        What Clients Say
-      </h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {testimonials.map((t) => (
-          <div key={t.id} className="testimonial-card">
-            <EditorBlock testimonial={t} />
+      <div className="measure">
+        <SectionHead
+          index="05"
+          label="Social proof"
+          id="testimonials-heading"
+          title="What clients say."
+          className="mb-10 md:mb-12"
+        />
+
+        {/* Metadata band straddling a rule that strokes itself in — the count
+            is real, read off the data rather than typed in. */}
+        <div className="relative pt-4">
+          <span
+            data-rule
+            aria-hidden="true"
+            className="absolute inset-x-0 top-0 h-px origin-left bg-[hsl(var(--foreground)_/0.14)]"
+          />
+          <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2" data-reveal>
+            <span className="micro">
+              {items.length} {items.length === 1 ? 'Reference' : 'References'}
+            </span>
+            <span className="micro">Verified engagements</span>
+            <span className="micro micro--strong">Auto-advancing</span>
           </div>
-        ))}
+        </div>
+
+        {/* Circular, autoplaying testimonial carousel — themed to the ink palette
+            via CSS variables so it tracks the active theme (light/dark + accent). */}
+        <div className="mt-12 flex justify-center" data-reveal>
+          <CircularTestimonials
+            testimonials={items}
+            autoplay
+            colors={{
+              name: 'hsl(var(--foreground))',
+              designation: 'hsl(var(--muted-foreground))',
+              testimony: 'hsl(var(--foreground))',
+              arrowBackground: 'hsl(var(--foreground))',
+              arrowForeground: 'hsl(var(--background))',
+              arrowHoverBackground: 'hsl(var(--primary))',
+            }}
+            fontSizes={{
+              name: '1.75rem',
+              designation: '0.9rem',
+              quote: '1.15rem',
+            }}
+          />
+        </div>
+
+        <div className="relative mt-14">
+          <span
+            data-rule
+            aria-hidden="true"
+            className="absolute inset-x-0 top-0 h-px origin-left bg-[hsl(var(--foreground)_/0.14)]"
+          />
+        </div>
       </div>
     </section>
   );

@@ -4,60 +4,105 @@
 
 @layer base {
   :root {
-    --background: 222 20% 8%;
-    --background-light: 222 18% 12%;
-    --foreground: 220 13% 91%;
+    /* Motion.dev-inspired palette — near-black surface, warm-white ink, one loud accent. */
+    --background: 0 0% 3%;          /* #080808 */
+    --background-light: 0 0% 6%;    /* #0f0f0f */
+    --foreground: 60 3% 93%;        /* #E6E6DC */
+    --foreground-muted: 56 5% 56%;  /* #909890 */
 
-    --primary: 217 91% 60%;
-    --primary-foreground: 0 0% 100%;
-    --primary-hover: 217 91% 55%;
+    --primary: 50 100% 60%;         /* #FBD509 - accent yellow */
+    --primary-foreground: 0 0% 8%;  /* near black - the ONLY legible ink on #FBD509 */
+    --primary-hover: 50 100% 50%;
 
-    --secondary: 200 95% 55%;
-    --secondary-foreground: 0 0% 100%;
+    /* The accent used as TYPE. On the dark theme that is the yellow itself; on
+       the light theme lib/theme.ts swaps in a dark amber, because #FBD509 on
+       near-white paper is ~1.5:1. Anything drawing accent-coloured TEXT should
+       use this; fills keep using --primary. */
+    --primary-ink: 50 100% 60%;
 
-    --muted: 220 9% 20%;
-    --muted-foreground: 220 9% 65%;
+    --secondary: 0 0% 95%;          /* neutral chip — inverse of the surface */
+    --secondary-foreground: 0 0% 12%;
 
-    --border: 220 13% 20%;
-    --ring: 217 91% 60%;
+    --accent: 0 0% 4%;              /* neutral surface token (Tailwind `accent`) */
+    --accent-foreground: 60 3% 93%;
 
-    --success: 142 76% 36%;
-    --warning: 38 92% 50%;
-    --error: 0 84% 60%;
+    --border: 0 0% 14%;
+    --input: 0 0% 10%;
+    --ring: 50 100% 60%;
 
-    --radius: 0.5rem;
+    /* Aliases — a lot of components reference these spellings directly via
+       arbitrary values (hsl(var(--muted-foreground))) rather than through
+       Tailwind's theme, so both names need to resolve to the same value. */
+    --muted-foreground: var(--foreground-muted);
+    --muted: var(--border);
+
+    --radius: 0;                     /* Swiss: sharp corners everywhere. No exceptions. */
+
+    /* Geist Sans is the heavy grotesque (Inter/Helvetica Now family) — it carries
+       display type AND body copy. No decorative display face: in the International
+       Typographic style the grotesque does all the work, scale creates hierarchy. */
+    --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+    --font-mono: var(--font-geist-mono), ui-monospace, 'SF Mono', monospace;
+    --font-display: var(--font-sans);
+
+    /* ── Swiss grid + print-registration tokens ── */
+    --rule: 1px;                     /* hairline weight — one value, used everywhere */
+    --rule-color: hsl(var(--foreground) / 0.14);
+    --crop-len: 14px;                /* crop-mark / corner-bracket arm length */
+    --gutter: clamp(1rem, 4vw, 2.5rem);
+    --measure: 1240px;               /* the column the whole site aligns to */
+
+    /* Durations */
+    --duration-short: 150ms;
+    --duration-base: 200ms;
+    --duration-medium: 400ms;
+    --duration-long: 500ms;
+
+    /* Spring-inspired easing */
+    --ease-spring-1: cubic-bezier(0.4, 0, 0.2, 1);            /* snap */
+    --ease-spring-2: cubic-bezier(0.25, 0.1, 0.25, 1.0);      /* ui / smooth reveal */
+    --ease-spring-3: cubic-bezier(0.3, 0, 0.7, 1);            /* gentle entrance */
+    --ease-spring-4: cubic-bezier(0.68, -0.55, 0.265, 1.55);  /* lively / bouncy */
+    --ease-spring-5: cubic-bezier(0.4, 0, 0.6, 1);            /* ambient float */
   }
 
-  /* Smooth theme colour transitions */
-  html {
-    transition: background-color 0.35s ease, color 0.35s ease;
-  }
-  .transition-theme,
-  .btn-primary, .btn-outline, .skill-item, .approach-card,
-  .testimonial-card, .demo-widget, .experience-item {
-    transition-property: background-color, border-color, color, box-shadow !important;
-    transition-duration: 0.35s !important;
-    transition-timing-function: ease !important;
-  }
-
-  * {
-    @apply border-border;
+  *,
+  *::before,
+  *::after {
     box-sizing: border-box;
-    padding: 0;
     margin: 0;
+    padding: 0;
   }
 
   html {
     scroll-behavior: smooth;
+    font-size: 16px;
   }
 
   body {
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
-    font-family: var(--font-geist-sans), sans-serif;
+    font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+    font-feature-settings: 'ss01' 1, 'cv01' 1;
+    line-height: 1.5;
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* ── Mobile bottom reserve ────────────────────────────────────────────────
+     The mobile navbar is `position: fixed; bottom: 0` and occupies 80px, but
+     `main` had `padding-bottom: 0` on every route — so the last rows of every
+     long page sat underneath it, unreadable and untappable. Reserve the band
+     (plus the home-indicator inset) below `md`, where that navbar exists.
+
+     Set on `main` rather than `body` on purpose: `body` padding would push the
+     `position: fixed` chrome around on some engines, and footers that want to
+     bleed to the true page edge still can above `md`. */
+  @media (max-width: 767.98px) {
+    main {
+      padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+    }
   }
 
   ::selection {
@@ -66,7 +111,7 @@
   }
 
   ::-webkit-scrollbar {
-    width: 4px;
+    width: 6px;
   }
 
   ::-webkit-scrollbar-track {
@@ -74,93 +119,732 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    background: hsl(var(--primary) / 0.5);
-    border-radius: 2px;
+    background: hsl(var(--primary) / 0.4);
+    border-radius: 0;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--primary));
+    background: hsl(var(--primary) / 0.7);
+  }
+
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+    border-radius: 0;
+  }
+
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 }
 
+/* ══════════════════════════════════════════════════════════════════════════
+   COMPONENT LAYER
+   Shared primitives — big, legible type; soft cards; confident CTAs.
+   ══════════════════════════════════════════════════════════════════════════ */
 @layer components {
-  /* ── Preloader ── */
-  .preloader {
-    position: fixed;
+  /* ══ MICRO-LABELS ══════════════════════════════════════════════════════════
+     Monospaced, uppercase, wide-tracked. These are METADATA, not decoration —
+     they annotate the page the way a print spec sheet annotates a plate
+     (29 SECTIONS, LIVE PREVIEW). Deliberately muted: colouring them with the
+     accent is what turned them into ornament before. The accent is reserved
+     for semantic work (see .accent). ── */
+  .micro,
+  .eyebrow,
+  .section-number,
+  .nb-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-mono), ui-monospace, monospace;
+    font-size: 0.6875rem;            /* 11px — small enough to read as spec type */
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    line-height: 1;
+    color: hsl(var(--foreground-muted));
+    font-feature-settings: 'tnum' 1; /* tabular figures — numbers align in columns */
+  }
+
+  /* The one place a micro-label earns the accent: live/active status.
+     `--primary-ink` rather than `--primary` because this is TYPE — see the
+     token's definition above. Falls back to --primary if it's ever unset. */
+  .micro--accent { color: hsl(var(--primary-ink, var(--primary))); }
+  .micro--strong { color: hsl(var(--foreground)); }
+
+  /* Metadata separated by a hairline instead of a bullet — print, not web. */
+  .micro--ruled { gap: 0.75rem; }
+  .micro--ruled > * + *::before {
+    content: '';
+    display: inline-block;
+    width: 1.25rem;
+    height: var(--rule);
+    margin-right: 0.75rem;
+    background: var(--rule-color);
+    vertical-align: middle;
+  }
+
+  /* ══ DISPLAY TYPE ══════════════════════════════════════════════════════════
+     One heavy grotesque, tight tracking, near-solid leading. Hierarchy comes
+     from scale and whitespace — never from a second typeface. ── */
+  .text-display {
+    font-family: var(--font-display);
+    font-weight: 800;
+    letter-spacing: -0.035em;
+    line-height: 0.92;
+    font-size: clamp(2.5rem, 7vw, 5.75rem);
+    text-wrap: balance;
+  }
+
+  .section-title {
+    font-family: var(--font-display);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 0.95;
+    font-size: clamp(2rem, 5vw, 3.75rem);
+    text-wrap: balance;
+  }
+
+  /* ── The accent's ONLY job: mark the load-bearing word in a headline.
+     ("Motion UI", "move", "love" on the reference.) Never decorative.
+     Uses the ink variant so the marked word stays readable on light paper. ── */
+  .accent { color: hsl(var(--primary-ink, var(--primary))); }
+
+  .text-lede {
+    font-size: clamp(1.0625rem, 1.6vw, 1.25rem);
+    line-height: 1.5;
+    color: hsl(var(--foreground-muted));
+    max-width: 52ch;
+    text-wrap: pretty;
+  }
+
+  /* ══ PRINT REGISTRATION MARKS ══════════════════════════════════════════════
+     Corner brackets / crop marks. Four absolutely-positioned L-shapes drawn
+     with borders — no SVG, no pseudo-element juggling per corner. Put
+     .crop-frame on a `position: relative` box. ── */
+  .crop-frame { position: relative; }
+
+  .crop-frame > .crop {
+    position: absolute;
+    width: var(--crop-len);
+    height: var(--crop-len);
+    /* Registration marks carry the live accent, so switching the theme colour
+       repaints every corner on the site. `--primary` (the fill token) rather
+       than `--primary-ink`: these are 1px strokes, not type, and the ink token
+       is darkened for text legibility on light backgrounds — which would make
+       the marks muddy rather than bright. */
+    border-color: hsl(var(--primary));
+    border-style: solid;
+    border-width: 0;
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  /* These must out-specify `.crop-frame > .crop`'s `border-width: 0` reset,
+     so they carry the same two-class weight — a bare `.crop--tl` loses and
+     the brackets render invisible. */
+  .crop-frame > .crop--tl { top: 0; left: 0;  border-top-width: var(--rule); border-left-width: var(--rule); }
+  .crop-frame > .crop--tr { top: 0; right: 0; border-top-width: var(--rule); border-right-width: var(--rule); }
+  .crop-frame > .crop--bl { bottom: 0; left: 0;  border-bottom-width: var(--rule); border-left-width: var(--rule); }
+  .crop-frame > .crop--br { bottom: 0; right: 0; border-bottom-width: var(--rule); border-right-width: var(--rule); }
+
+  /* ══ HAIRLINE RULES ════════════════════════════════════════════════════════ */
+  .rule {
+    height: var(--rule);
+    width: 100%;
+    background: var(--rule-color);
+    border: 0;
+    flex-shrink: 0;
+  }
+
+  .rule-t { border-top: var(--rule) solid var(--rule-color); }
+  .rule-b { border-bottom: var(--rule) solid var(--rule-color); }
+  .rule-l { border-left: var(--rule) solid var(--rule-color); }
+  .rule-r { border-right: var(--rule) solid var(--rule-color); }
+
+  /* ══ GRID ══════════════════════════════════════════════════════════════════
+     One measure, one gutter, sitewide. Items pin to column edges. ── */
+  .measure {
+    width: 100%;
+    max-width: var(--measure);
+    margin-inline: auto;
+    padding-inline: var(--gutter);
+  }
+
+  .grid-12 {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: var(--gutter);
+  }
+
+  @media (max-width: 768px) {
+    .grid-12 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  }
+
+  /* ══ FULL-BLEED RULES ══════════════════════════════════════════════════════
+     The signature move of this style: hairlines run the full width of the
+     viewport while the content they annotate stays inside `.measure`. A rule
+     that stops at the content edge reads as a box; one that runs off both
+     edges reads as a registration line on a press sheet.
+
+     Implemented as a full-width block element rather than the `100vw` +
+     `translateX(-50%)` trick — that trick disagrees with the scrollbar width
+     and would fight `body { overflow-x: hidden }`. ── */
+  .bleed-t { border-top: var(--rule) solid var(--rule-color); }
+  .bleed-b { border-bottom: var(--rule) solid var(--rule-color); }
+
+  /* ══ SPEC BAR ══════════════════════════════════════════════════════════════
+     Metadata distributed edge to edge, straddling a bleed rule
+     (the "29 SECTIONS / 14 CATEGORIES / SHADCN INSTALL" band). Items sit at
+     column positions across the whole viewport, not inside the measure. ── */
+  .spec-bar {
+    display: grid;
+    gap: 0.75rem var(--gutter);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 0.9rem var(--gutter);
+    border-top: var(--rule) solid var(--rule-color);
+  }
+
+  @media (min-width: 768px) {
+    .spec-bar {
+      grid-auto-flow: column;
+      grid-auto-columns: minmax(0, 1fr);
+      grid-template-columns: none;
+    }
+  }
+
+  /* ══ SECTION HEADER ════════════════════════════════════════════════════════
+     Three columns: a metadata rail (number + label) capped by its OWN short
+     rule, the heading block, and an action pinned to the right edge. The short
+     rule over just the rail is what makes the grid legible — it shows the
+     column boundary without drawing a box. ── */
+  .section-head {
+    display: grid;
+    gap: 1.25rem var(--gutter);
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+  }
+
+  @media (min-width: 900px) {
+    .section-head {
+      grid-template-columns: minmax(150px, 1.7fr) minmax(0, 5fr) auto;
+    }
+  }
+
+  .section-head__meta {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-top: 0.8rem;
+    border-top: var(--rule) solid var(--rule-color);
+  }
+
+  /* ══ PANEL ═════════════════════════════════════════════════════════════════
+     A bordered strip with an internal vertical divider separating content from
+     actions — the "Editorial stagger hero / RANDOM ⤨ / OPEN THIS SECTION →"
+     row at the bottom of the reference. ── */
+  .panel {
+    display: flex;
+    align-items: stretch;
+    justify-content: space-between;
+    border: var(--rule) solid var(--rule-color);
+  }
+
+  .panel__body { padding: 0.9rem var(--gutter); min-width: 0; }
+
+  .panel__actions {
+    display: flex;
+    align-items: stretch;
+    flex-shrink: 0;
+  }
+
+  /* Vertical hairlines between actions — the divider, drawn not implied. */
+  .panel__actions > * {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding-inline: 1.1rem;
+    border-left: var(--rule) solid var(--rule-color);
+    transition: background-color var(--duration-base) ease,
+                color var(--duration-base) ease;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .panel__actions > *:hover {
+      background: hsl(var(--foreground) / 0.05);
+      color: hsl(var(--foreground));
+    }
+  }
+
+  /* ── Buttons — small, dense, uppercase mono labels (Swiss/dev-tool tell).
+     Flat: no box-shadow, no gradient. Feedback is color/border only. ── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.1rem;
+    /* 44px is the minimum comfortable touch target; the previous 40px meant
+       every button on the site missed it. Desktop keeps the denser 40px via
+       the `md` override below, where the pointer is fine and precise. */
+    min-height: 44px;
+    border-radius: var(--radius);
+    font-family: var(--font-mono), ui-monospace, monospace;
+    font-weight: 500;
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: background-color var(--duration-base) ease,
+                border-color var(--duration-base) ease,
+                color var(--duration-base) ease,
+                transform 140ms cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+  @media (min-width: 768px) {
+    .btn { min-height: 40px; }
+  }
+
+  /* Press feedback — the one transform the system keeps. Flat visuals still
+     need to confirm the interface heard the click. */
+  .btn:active { transform: scale(0.97); }
+
+  /* Arrow glyph slides on hover — the dev-tool button tell. */
+  @media (hover: hover) and (pointer: fine) {
+    .btn > svg:last-child {
+      transition: transform var(--duration-base) cubic-bezier(0.23, 1, 0.32, 1);
+    }
+    .btn:hover > svg:last-child { transform: translateX(3px); }
+  }
+
+  .btn-primary {
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .btn-primary:hover {
+      background: hsl(var(--primary-hover));
+    }
+  }
+
+  .btn-outline {
+    background: transparent;
+    color: hsl(var(--foreground));
+    border-color: hsl(var(--border));
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .btn-outline:hover {
+      border-color: hsl(var(--primary));
+      color: hsl(var(--primary));
+    }
+  }
+
+  .btn-ghost {
+    background: transparent;
+    color: hsl(var(--foreground-muted));
+    padding-inline: 0.75rem;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .btn-ghost:hover {
+      color: hsl(var(--foreground));
+    }
+  }
+
+  /* ══ Hover system ══════════════════════════════════════════════════════════
+     Buttons split two ways across the site:
+
+       ~70%  `data-magnetic` — the button eases toward the pointer. Driven by
+             components/motion/MagneticField.tsx.
+       ~30%  `.btn-fx-*`     — a pure-CSS hover effect, no JS at all. These go
+             on form submits and legal/utility nav, where a control that drifts
+             away from the pointer is a usability problem rather than a
+             flourish.
+
+     Both are gated behind a real hover-capable pointer, and both are inert
+     under reduced motion.
+     ─────────────────────────────────────────────────────────────────────── */
+
+  /* ── Magnetic ────────────────────────────────────────────────────────────
+     The offset arrives as --mx/--my and is applied through `translate`, NOT
+     `transform`. `transform` is already spoken for by `.btn:active`'s
+     scale(0.97); using the independent property lets the pull and the press
+     compose instead of one clobbering the other. */
+  @media (hover: hover) and (pointer: fine) {
+    [data-magnetic] {
+      translate: var(--mx, 0) var(--my, 0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-magnetic] {
+      translate: none;
+    }
+  }
+
+  /* ── Guestbook note ───────────────────────────────────────────────────────
+     Each note sits a fraction off square and straightens when pointed at. The
+     angle rides the independent `rotate` property rather than `transform`,
+     because `transform` on this element is already spoken for by the hover
+     lift — and on its parent by the GSAP scroll reveal. Separate properties
+     compose; a second `transform` would simply win and drop the tilt. */
+  .note-card {
+    rotate: var(--tilt, 0deg);
+    transition: rotate var(--duration-base) cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .note-card:hover {
+      rotate: 0deg;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .note-card {
+      transition: none;
+    }
+  }
+
+  /* ── CSS effect 1: sweep ──────────────────────────────────────────────────
+     A block of accent wipes across from the left, under the label. The label
+     sits on its own layer so it inverts cleanly as the fill passes beneath it.
+     Used on form submits: reads as "this is the action" without moving the
+     target a single pixel. */
+  .btn-fx-sweep {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+  }
+
+  .btn-fx-sweep::before {
+    content: '';
+    position: absolute;
     inset: 0;
-    background: black;
-    z-index: 9999;
+    z-index: -1;
+    background: hsl(var(--primary));
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform var(--duration-base) cubic-bezier(0.65, 0, 0.35, 1);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .btn-fx-sweep:hover::before,
+    .btn-fx-sweep:focus-visible::before {
+      transform: scaleX(1);
+    }
+
+    .btn-fx-sweep:hover,
+    .btn-fx-sweep:focus-visible {
+      color: hsl(var(--primary-foreground));
+      border-color: hsl(var(--primary));
+    }
+  }
+
+  /* A disabled control must not preview an action it will not perform. Two of
+     these (the /idea form's Continue and Send) render disabled until their step
+     validates, and `:hover` still matches a disabled button. */
+  .btn-fx-sweep:disabled::before,
+  .btn-fx-sweep[aria-disabled='true']::before {
+    transform: scaleX(0);
+  }
+
+  .btn-fx-sweep:disabled,
+  .btn-fx-sweep[aria-disabled='true'] {
+    color: inherit;
+  }
+
+  /* The fill would be invisible against an already-primary button, so that
+     variant sweeps to the foreground colour instead. */
+  .btn-primary.btn-fx-sweep::before {
+    background: hsl(var(--foreground));
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .btn-primary.btn-fx-sweep:hover,
+    .btn-primary.btn-fx-sweep:focus-visible {
+      color: hsl(var(--background));
+      border-color: hsl(var(--foreground));
+    }
+  }
+
+  /* ── CSS effect 2: frame ──────────────────────────────────────────────────
+     Two hairlines grow from opposite corners and meet, drawing a bracket
+     around the label. The registration-mark vocabulary the rest of the page
+     already uses, applied to a control. Used on legal/utility navigation. */
+  .btn-fx-frame {
+    position: relative;
+  }
+
+  .btn-fx-frame::before,
+  .btn-fx-frame::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 0;
+    border: 0 solid hsl(var(--primary));
+    transition: width var(--duration-base) ease, height var(--duration-base) ease;
+    pointer-events: none;
+  }
+
+  .btn-fx-frame::before {
+    top: -2px;
+    left: -2px;
+    border-top-width: 1px;
+    border-left-width: 1px;
+  }
+
+  .btn-fx-frame::after {
+    right: -2px;
+    bottom: -2px;
+    border-right-width: 1px;
+    border-bottom-width: 1px;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .btn-fx-frame:hover::before,
+    .btn-fx-frame:hover::after,
+    .btn-fx-frame:focus-visible::before,
+    .btn-fx-frame:focus-visible::after {
+      width: calc(100% + 4px);
+      height: calc(100% + 4px);
+    }
+
+    .btn-fx-frame:hover {
+      color: hsl(var(--primary));
+    }
+  }
+
+  /* ── CSS effect 3: swap ───────────────────────────────────────────────────
+     The label rides up out of the box while a copy of itself rises into its
+     place. The copy comes from `data-label`, so the markup carries the text
+     once and the effect is entirely in CSS:
+
+         <button class="btn btn-fx-swap" data-label="Send">Send</button>
+
+     Needs a fixed height to clip against, which `.btn`'s min-height gives it. */
+  .btn-fx-swap {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-fx-swap > .btn-fx-swap__label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: transform var(--duration-base) cubic-bezier(0.65, 0, 0.35, 1);
+  }
+
+  .btn-fx-swap::after {
+    content: attr(data-label);
+    position: absolute;
+    inset: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
+    color: hsl(var(--primary));
+    transform: translateY(100%);
+    transition: transform var(--duration-base) cubic-bezier(0.65, 0, 0.35, 1);
   }
 
-  .preloader__text {
-    font-size: clamp(2rem, 8vw, 6rem);
-    font-weight: 700;
-    letter-spacing: -0.02em;
+  @media (hover: hover) and (pointer: fine) {
+    .btn-fx-swap:hover > .btn-fx-swap__label,
+    .btn-fx-swap:focus-visible > .btn-fx-swap__label {
+      transform: translateY(-140%);
+    }
+
+    .btn-fx-swap:hover::after,
+    .btn-fx-swap:focus-visible::after {
+      transform: translateY(0);
+    }
+  }
+
+  /* All three collapse to a plain colour change when motion is unwelcome. */
+  @media (prefers-reduced-motion: reduce) {
+    .btn-fx-sweep::before,
+    .btn-fx-frame::before,
+    .btn-fx-frame::after,
+    .btn-fx-swap > .btn-fx-swap__label,
+    .btn-fx-swap::after {
+      transition: none;
+    }
+
+    .btn-fx-swap::after {
+      display: none;
+    }
+
+    .btn-fx-swap:hover > .btn-fx-swap__label {
+      transform: none;
+    }
+  }
+
+  /* ── Form fields — shared by every form on the site (Contact, /idea) ── */
+  .input {
+    display: block;
+    width: 100%;
+    background: hsl(var(--background-light) / 0.5);
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
+    padding: 0.75rem 1rem;
+    /* 16px, NOT 0.9rem/14.4px. iOS Safari force-zooms the whole viewport when
+       a focused field is under 16px, and the visitor cannot undo that without
+       pinching back out — it hit all seven fields on the site. Desktop takes
+       the smaller size below, where no such rule exists. */
+    font-size: 1rem;
     color: hsl(var(--foreground));
-    overflow: hidden;
+    transition: border-color var(--duration-base) ease, background-color var(--duration-base) ease;
   }
 
-  /* ── Custom cursor ── */
-  .custom-cursor {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 12px;
-    height: 12px;
+  @media (min-width: 768px) {
+    .input { font-size: 0.9rem; }
+  }
+
+  .input::placeholder {
+    color: hsl(var(--foreground-muted) / 0.6);
+  }
+
+  .input:focus-visible {
+    outline: none;
+    border-color: hsl(var(--primary) / 0.6);
+    background: hsl(var(--background-light) / 0.75);
+  }
+
+  textarea.input {
+    resize: vertical;
+    min-height: 6.5rem;
+  }
+
+  /* ══ SURFACES ══════════════════════════════════════════════════════════════
+     A card is a rectangle with a hairline border. That is the whole idea.
+     No drop-shadow, no gradient fill, no hover lift — depth in this style is
+     communicated by rules and whitespace, not by faking elevation. Hover
+     shifts the border and nothing else. ── */
+  .card,
+  .nb-card,
+  .testimonial-card,
+  .skill-item,
+  .approach-card {
+    background: hsl(var(--background-light) / 0.6);
+    border: var(--rule) solid hsl(var(--border));
+    border-radius: 0;
+    transition: border-color var(--duration-base) ease,
+                background-color var(--duration-base) ease;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .card:hover,
+    .nb-card:hover,
+    .testimonial-card:hover,
+    .skill-item:hover,
+    .approach-card:hover {
+      border-color: hsl(var(--foreground) / 0.32);
+      background: hsl(var(--background-light) / 0.9);
+    }
+
+    .card--accent:hover {
+      border-color: hsl(var(--primary)) !important;
+    }
+  }
+
+  .testimonial-card { padding: 2rem; position: relative; }
+
+  .skill-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 1rem;
+  }
+
+  .approach-card { padding: 1.5rem; }
+
+  /* ── Liquid glass — retained as the nav/hero chrome treatment, but reduced to
+     what it should always have been: translucency + blur so content scrolling
+     underneath stays legible, framed by one hairline. The gradient sheen border
+     is gone — it was the last gradient in the system. ── */
+  .liquid-glass {
+    position: relative;
+    background: hsl(var(--background) / 0.6);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: var(--rule) solid hsl(var(--foreground) / 0.14);
+    border-radius: 0;
+  }
+
+  /* ── Legacy neo-brutalist button alias (components still reference it) ── */
+  .nb-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0.6rem 1.1rem;
+    min-height: 40px;
     background: hsl(var(--primary));
-    border-radius: 50%;
-    pointer-events: none;
-    z-index: 9998;
-    transform: translate(-50%, -50%);
-    transition: width 0.2s, height 0.2s, background 0.2s;
-    mix-blend-mode: screen;
+    color: hsl(var(--primary-foreground));
+    border-radius: 0;
+    font-family: var(--font-mono), ui-monospace, monospace;
+    font-weight: 500;
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color var(--duration-base) ease,
+                border-color var(--duration-base) ease,
+                color var(--duration-base) ease;
   }
 
-  .custom-cursor--large {
-    width: 40px;
-    height: 40px;
-    background: hsl(var(--primary) / 0.2);
-    border: 1px solid hsl(var(--primary));
-    mix-blend-mode: normal;
+  .nb-btn--outline {
+    background: transparent;
+    color: hsl(var(--foreground));
+    border: var(--rule) solid hsl(var(--border));
   }
 
-  .cursor-follower {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 40px;
-    height: 40px;
-    border: 1px solid hsl(var(--primary) / 0.4);
-    border-radius: 50%;
-    pointer-events: none;
-    z-index: 9997;
-    transform: translate(-50%, -50%);
-    transition: width 0.3s, height 0.3s;
-  }
 
   /* ── Scroll progress ── */
+  /* Solid accent, not a gradient — and 1px, matching every other rule on the
+     site so it reads as a hairline that happens to be measuring progress. */
   .scroll-progress {
     position: fixed;
     top: 0;
     left: 0;
-    height: 2px;
-    background: linear-gradient(
-      to right,
-      hsl(var(--primary)),
-      hsl(var(--secondary))
-    );
+    height: var(--rule);
+    background: hsl(var(--primary));
     z-index: 9996;
     transform-origin: left;
+    /* It is a 1px decoration sitting at z-9996 across the full width of the
+       viewport — with pointer events it silently ate every tap and click on
+       the topmost row of the page. */
+    pointer-events: none;
   }
 
-  /* ── Sticky email ── */
+  /* ── Sticky email rail ── */
   .sticky-email {
     position: fixed;
-    right: -60px;
+    /* Was `-60px`, which parked the whole rail outside the viewport where
+       `body { overflow-x: hidden }` clipped it — it has never rendered on any
+       screen size. Pulled back to a real gutter offset so it actually appears
+       at `lg` and up, which is the only breakpoint that mounts it. */
+    right: 0.75rem;
     bottom: 0;
     writing-mode: vertical-rl;
     display: flex;
@@ -173,9 +857,9 @@
   .sticky-email a {
     font-size: 0.75rem;
     letter-spacing: 0.1em;
-    color: hsl(var(--muted-foreground));
+    color: hsl(var(--muted-foreground, var(--foreground-muted)));
     text-decoration: none;
-    transition: color 0.2s;
+    transition: color var(--duration-base) ease;
   }
 
   .sticky-email a:hover {
@@ -187,46 +871,38 @@
     display: block;
     width: 1px;
     height: 80px;
-    background: hsl(var(--muted-foreground));
+    background: hsl(var(--foreground-muted));
   }
+
+  /* ── Ambient background layers ─────────────────────────────────────────────
+     These three sit BEHIND page content. They used to rely on `main` being a
+     z-10 stacking context to stay there — but that stacking context was itself
+     the bug that trapped page overlays under the navbar (see app/layout.tsx),
+     so with it gone they are re-based to negative z-index instead. Negative
+     z-index still paints above the canvas background (`body`'s background
+     propagates to the canvas), so they remain visible; they just can no longer
+     climb over the content. ── */
 
   /* ── Noise texture overlay ── */
   .noise-overlay {
     position: fixed;
     inset: 0;
     pointer-events: none;
-    z-index: 1;
-    opacity: 0.025;
+    z-index: -1;
+    opacity: 0.02;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
   }
 
-  /* ── Section headings ── */
-  .section-title {
-    font-size: clamp(1.75rem, 4vw, 3rem);
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    line-height: 1.1;
-  }
-
-  .section-number {
-    font-size: 0.75rem;
-    letter-spacing: 0.2em;
-    color: hsl(var(--primary));
-    text-transform: uppercase;
-    font-weight: 600;
-  }
-
-  /* ── Project card ── */
+  /* ── Project card (legacy full-bleed variant) ── */
   .project-card {
     position: relative;
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 0;
     border-bottom: 1px solid hsl(var(--border));
     padding: 2rem 0;
     overflow: hidden;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: background-color var(--duration-medium) ease;
   }
 
   @media (max-width: 768px) {
@@ -244,12 +920,12 @@
     pointer-events: none;
     width: 300px;
     height: 200px;
-    border-radius: 8px;
+    border-radius: var(--radius);
     overflow: hidden;
     z-index: 50;
     opacity: 0;
     transform: translate(-50%, -50%);
-    transition: opacity 0.3s ease;
+    transition: opacity var(--duration-medium) ease;
   }
 
   @media (max-width: 768px) {
@@ -258,7 +934,25 @@
     }
   }
 
-  /* ── Animations ── */
+  /* Testimonial / skill / approach surfaces are defined with .card above —
+     one flat rectangle spec shared by every surface on the site. */
+
+  .approach-card__icon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+  }
+
+  /* ── Experience item ── */
+  .experience-item {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+
+  /* ── Generic reveal helpers ── */
   .slide-up-and-fade {
     opacity: 0;
     transform: translateY(40px);
@@ -269,156 +963,478 @@
     transform: translateX(-40px);
   }
 
-  /* ── Skills grid ── */
-  .skill-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    padding: 1rem;
-    border: 1px solid hsl(var(--border));
-    border-radius: 8px;
-    background: hsl(var(--background-light));
-    transition: all 0.2s ease;
-  }
-
-  .skill-item:hover {
-    border-color: hsl(var(--primary) / 0.5);
-    background: hsl(var(--primary) / 0.05);
-    transform: translateY(-2px);
-  }
-
-  /* ── CTA button ── */
-  .btn-primary {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 0.75rem 1.75rem;
-    background: hsl(var(--primary));
-    color: hsl(var(--primary-foreground));
-    border-radius: 4px;
-    font-weight: 600;
-    font-size: 0.9rem;
-    letter-spacing: 0.02em;
-    text-decoration: none;
-    transition: all 0.2s ease;
-    min-height: 44px;
-  }
-
-  .btn-primary:hover {
-    background: hsl(var(--primary-hover));
-    transform: translateY(-1px);
-    box-shadow: 0 8px 24px hsl(var(--primary) / 0.3);
-  }
-
-  .btn-outline {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 0.75rem 1.75rem;
-    border: 1px solid hsl(var(--primary));
-    color: hsl(var(--primary));
-    border-radius: 4px;
-    font-weight: 600;
-    font-size: 0.9rem;
-    letter-spacing: 0.02em;
-    text-decoration: none;
-    transition: all 0.2s ease;
-    min-height: 44px;
-    background: transparent;
-  }
-
-  .btn-outline:hover {
-    background: hsl(var(--primary) / 0.1);
-    transform: translateY(-1px);
-  }
-
-  /* ── Experience item ── */
-  .experience-item {
-    opacity: 0;
-    transform: translateX(-20px);
-  }
-
-  /* ── Particle canvas ── */
   #particle-canvas {
     position: fixed;
     inset: 0;
     pointer-events: none;
-    z-index: 0;
+    z-index: -2;
     opacity: 0.4;
   }
 
-  /* ── Testimonial card ── */
-  .testimonial-card {
-    background: hsl(var(--background-light));
-    border: 1px solid hsl(var(--border));
-    border-radius: 12px;
-    padding: 2rem;
-    position: relative;
-    transition: border-color 0.2s;
-  }
+  /* ══ SOUND TOGGLE ══════════════════════════════════════════════════════════
+     The kill switch for the UI click sound. The sound ships ON, so this has to
+     be findable without hunting — it is a permanently visible chip rather than
+     something buried in a menu. Styled as spec type in a hairline box, i.e.
+     the same vocabulary as every other micro-label on the site.
 
-  .testimonial-card:hover {
-    border-color: hsl(var(--primary) / 0.4);
-  }
-
-  .testimonial-card::before {
-    content: '"';
-    position: absolute;
-    top: -0.5rem;
-    left: 1.5rem;
-    font-size: 5rem;
-    color: hsl(var(--primary) / 0.2);
-    line-height: 1;
-    font-family: Georgia, serif;
-  }
-
-  /* ── Interactive demo ── */
-  .demo-widget {
-    background: hsl(var(--background-light));
-    border: 1px solid hsl(var(--border));
-    border-radius: 12px;
-    overflow: hidden;
-  }
-
-  .demo-widget__header {
-    background: hsl(var(--muted));
-    padding: 0.75rem 1rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    border-bottom: 1px solid hsl(var(--border));
-  }
-
-  .demo-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-  }
-
-  /* ── How I Think section ── */
-  .approach-card {
-    padding: 1.5rem;
-    border: 1px solid hsl(var(--border));
-    border-radius: 8px;
-    background: hsl(var(--background-light));
-    transition: all 0.3s ease;
-  }
-
-  .approach-card:hover {
-    border-color: hsl(var(--primary) / 0.5);
-    transform: translateY(-4px);
-  }
-
-  .approach-card__icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 8px;
-    background: hsl(var(--primary) / 0.1);
-    display: flex;
+     Positioned bottom-left, and lifted above the 80px mobile navbar band on
+     small screens so the two never overlap. ── */
+  .sound-toggle {
+    position: fixed;
+    left: var(--gutter);
+    /* Clear the 80px mobile navbar band plus the home-indicator inset. */
+    bottom: calc(80px + env(safe-area-inset-bottom, 0px) + 0.75rem);
+    /* Above the navbar (z-60) so it is never covered by the chrome, and well
+       below page-level overlays (z-400+) so a modal still owns the screen. */
+    z-index: 70;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 1rem;
-    color: hsl(var(--primary));
+    gap: 0.5rem;
+    /* Deliberately a small SQUARE, not a labelled pill. It is fixed, so it
+       floats over whatever the page happens to have scrolled under it — a
+       full "SOUND ON" chip sat on top of body copy. The speaker glyph carries
+       the meaning; the word only appears on hover, where there is room. */
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    border: var(--rule) solid hsl(var(--border));
+    border-radius: 0;
+    background: hsl(var(--background) / 0.86);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    font-family: var(--font-mono), ui-monospace, monospace;
+    font-size: 0.625rem;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    line-height: 1;
+    color: hsl(var(--foreground-muted));
+    cursor: pointer;
+    transition: color var(--duration-base) ease, border-color var(--duration-base) ease;
   }
+
+  /* Accent = "live", the one semantic job the accent has on this site. */
+  .sound-toggle[data-on='true'] { color: hsl(var(--primary-ink, var(--primary))); }
+
+  .sound-toggle__icon { flex-shrink: 0; }
+
+  /* Hidden by default; revealed on hover/focus where a pointer exists. */
+  .sound-toggle__label {
+    display: none;
+    white-space: nowrap;
+  }
+
+  @media (min-width: 768px) {
+    .sound-toggle {
+      bottom: calc(var(--gutter) * 0.75);
+      width: 32px;
+      height: 32px;
+    }
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .sound-toggle:hover,
+    .sound-toggle:focus-visible {
+      width: auto;
+      padding-inline: 0.6rem;
+      color: hsl(var(--foreground));
+      border-color: hsl(var(--foreground) / 0.32);
+    }
+
+    .sound-toggle:hover .sound-toggle__label,
+    .sound-toggle:focus-visible .sound-toggle__label {
+      display: inline;
+    }
+  }
+}
+
+/* ── Magnetic morph cursor (motion.dev-style, desktop only) ────────────────── */
+.has-custom-cursor,
+.has-custom-cursor * {
+  cursor: none !important;
+}
+
+.mag-cursor-dot {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 0;
+  background: hsl(var(--primary));
+  pointer-events: none;
+  z-index: 9998;
+  will-change: transform;
+}
+
+.mag-cursor-box {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 12px;
+  height: 12px;
+  border-radius: 0;
+  border: 2px solid hsl(var(--foreground));
+  background: transparent;
+  pointer-events: none;
+  z-index: 9997;
+  will-change: transform, width, height;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.mag-cursor-box.is-morph {
+  background: hsl(var(--primary) / 0.1);
+  border-color: hsl(var(--primary));
+}
+
+.mag-cursor-box.is-down {
+  background: hsl(var(--primary) / 0.22);
+}
+
+@media (hover: none), (max-width: 640px) {
+  .mag-cursor-dot,
+  .mag-cursor-box {
+    display: none !important;
+  }
+  .has-custom-cursor,
+  .has-custom-cursor * {
+    cursor: auto !important;
+  }
+}
+
+/* ── Utility classes ─────────────────────────────────────────────────────── */
+.container {
+  width: 100%;
+}
+@media (min-width: 640px) {
+  .container { max-width: 640px; }
+}
+@media (min-width: 768px) {
+  .container { max-width: 768px; }
+}
+@media (min-width: 1024px) {
+  .container { max-width: 1024px; }
+}
+@media (min-width: 1280px) {
+  .container { max-width: 1280px; }
+}
+@media (min-width: 1536px) {
+  .container { max-width: 1536px; }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.text-balance { text-wrap: balance; }
+.text-pretty { text-wrap: pretty; }
+
+/* ── Accent AS TYPE ─────────────────────────────────────────────────────────
+   `text-primary` resolves to #FBD509. That is correct on the dark theme (13:1)
+   and unreadable on the light one (1.5:1) — and it is used ~50 times across
+   the site, so light mode was shipping fifty invisible labels.
+
+   Rather than touch fifty components, the utility is re-pointed at
+   `--primary-ink`, which IS the yellow on dark and a dark amber on light. Fill
+   utilities (`bg-primary`, `border-primary`) are deliberately untouched: a
+   yellow button is still a yellow button in both themes, it just gets
+   near-black type on it.
+
+   Declared after `@tailwind utilities` so it wins on source order at equal
+   specificity. ── */
+.text-primary { color: hsl(var(--primary-ink, var(--primary))); }
+.hover\:text-primary:hover { color: hsl(var(--primary-ink, var(--primary))); }
+.group:hover .group-hover\:text-primary { color: hsl(var(--primary-ink, var(--primary))); }
+
+.animate-pulse-slow {
+  animation: pulse-slow 3s ease-in-out infinite;
+}
+
+@keyframes pulse-slow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* ── Cinematic entrance — pure CSS, no JS timer to break in any browser.
+   Used for above-the-fold content (the hero) that's visible at first
+   paint, where a scroll-triggered reveal never gets a chance to matter. ── */
+@keyframes fade-rise {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-rise { animation: fade-rise 0.8s var(--ease-spring-2) both; }
+.animate-fade-rise-delay { animation: fade-rise 0.8s var(--ease-spring-2) 0.15s both; }
+.animate-fade-rise-delay-2 { animation: fade-rise 0.8s var(--ease-spring-2) 0.3s both; }
+.animate-fade-rise-delay-3 { animation: fade-rise 0.8s var(--ease-spring-2) 0.45s both; }
+.animate-fade-rise-delay-4 { animation: fade-rise 0.8s var(--ease-spring-2) 0.6s both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-rise,
+  .animate-fade-rise-delay,
+  .animate-fade-rise-delay-2,
+  .animate-fade-rise-delay-3,
+  .animate-fade-rise-delay-4 {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.transition-transform {
+  transition-property: transform;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+.transition-opacity {
+  transition-property: opacity;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+.transition-colors {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+.transition-all {
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.border-bottom {
+  border-bottom: 1px solid hsl(var(--border)) !important;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   COSMIC PARALLAX BACKGROUND
+   Three star layers drawn as box-shadow spots, each scrolling at its own
+   speed. The supplied snippet shipped only the @keyframes, so the layout
+   rules below are written to match the component's markup.
+
+   Selectors are classes, not ids: the ambient backdrop is mounted once in the
+   root layout, and ids would collide the moment any page rendered a second
+   instance.
+   ══════════════════════════════════════════════════════════════════════════ */
+:root {
+  --animation-iteration: infinite;
+}
+
+.cosmic-parallax-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: hsl(var(--background));
+  /* Star colour. The generated shadows carry no colour of their own, so they
+     resolve to currentColor — meaning this one declaration re-tints the whole
+     field, and the light theme gets dark specks instead of invisible white. */
+  color: hsl(var(--foreground) / 0.85);
+}
+
+/* Backdrop mode: fixed behind page content, inert, no background of its own
+   so the page's own surface colour shows through. */
+.cosmic-parallax-container--ambient {
+  position: fixed;
+  inset: 0;
+  /* Negative, not 0 — `main` is no longer a stacking context, so a z-0 fixed
+     layer would paint on top of the page's own non-positioned content. */
+  z-index: -2;
+  pointer-events: none;
+  background: transparent;
+  color: hsl(var(--foreground) / 0.5);
+}
+
+.cosmic-stars,
+.cosmic-stars-medium,
+.cosmic-stars-large {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: transparent;
+  /* Square, not round — the design system has no radii, and at 1–3px a square
+     spot is indistinguishable from a disc anyway. */
+  border-radius: 0;
+}
+
+.cosmic-stars {
+  width: 1px;
+  height: 1px;
+  animation: animStar 50s linear var(--animation-iteration);
+}
+
+.cosmic-stars-medium {
+  width: 2px;
+  height: 2px;
+  animation: animStar 100s linear var(--animation-iteration);
+}
+
+.cosmic-stars-large {
+  width: 3px;
+  height: 3px;
+  animation: animStar 150s linear var(--animation-iteration);
+}
+
+/* The duplicate sitting exactly 2000px below makes the 2000px scroll seamless.
+   `box-shadow: inherit` copies the parent's whole generated field. */
+.cosmic-stars::after,
+.cosmic-stars-medium::after,
+.cosmic-stars-large::after {
+  content: '';
+  position: absolute;
+  top: 2000px;
+  width: inherit;
+  height: inherit;
+  background: transparent;
+  box-shadow: inherit;
+}
+
+/* ── Horizon + earth (full variant only) ── */
+.cosmic-horizon {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 40%;
+  overflow: hidden;
+}
+
+.cosmic-glow {
+  position: absolute;
+  bottom: -55%;
+  left: 50%;
+  width: 160%;
+  aspect-ratio: 2 / 1;
+  transform: translateX(-50%);
+  background: radial-gradient(closest-side, hsl(var(--primary) / 0.3), transparent 70%);
+  filter: blur(28px);
+}
+
+.cosmic-earth {
+  position: absolute;
+  bottom: -52%;
+  left: 50%;
+  width: 160%;
+  aspect-ratio: 1;
+  transform: translateX(-50%);
+  background: hsl(var(--background));
+  border-top: 1px solid hsl(var(--foreground) / 0.22);
+  border-radius: 50%;
+}
+
+/* ── Title + subtitle (full variant only) ── */
+.cosmic-title {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(1.5rem, 6vw, 4rem);
+  letter-spacing: 35px;
+  padding-left: 35px;
+  white-space: nowrap;
+  color: hsl(var(--foreground));
+  animation: animGravity 6s ease-out var(--animation-iteration);
+}
+
+.cosmic-subtitle {
+  position: absolute;
+  top: calc(50% + 4rem);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 0.75rem;
+  white-space: nowrap;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: hsl(var(--foreground-muted));
+}
+
+.cosmic-subtitle span {
+  display: inline-block;
+  opacity: 0;
+}
+
+.cosmic-subtitle .subtitle-part-1 { animation: animDont 6s ease-out var(--animation-iteration); }
+.cosmic-subtitle .subtitle-part-2 { animation: animLet 6s ease-out var(--animation-iteration); }
+.cosmic-subtitle .subtitle-part-3 { animation: animGo 6s ease-out var(--animation-iteration); }
+.cosmic-subtitle .subtitle-part-4 { animation: animGo 6s ease-out var(--animation-iteration); }
+
+/* The global reduced-motion rule collapses every animation to 0.001ms, which
+   would land these on their final keyframe — opacity 0, i.e. invisible. Pin
+   them visible instead of merely stopping them. */
+@media (prefers-reduced-motion: reduce) {
+  .cosmic-title,
+  .cosmic-subtitle span {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none;
+  }
+  .cosmic-stars,
+  .cosmic-stars-medium,
+  .cosmic-stars-large {
+    animation: none !important;
+  }
+}
+
+@keyframes animStar {
+  from { transform: translateY(0px); }
+  to { transform: translateY(-2000px); }
+}
+
+@keyframes animGravity {
+  0% {
+    transform: translateY(-26px);
+    opacity: 0;
+  }
+  30%, 80% {
+    letter-spacing: 40px;
+    padding-left: 40px;
+    transform: translateY(0px);
+    opacity: 1;
+  }
+  92%, 100% {
+    letter-spacing: 35px;
+    padding-left: 35px;
+    transform: translateY(-4px);
+    opacity: 0;
+  }
+}
+
+@keyframes animDont {
+  0%, 15% { transform: translateY(-26px); opacity: 0; }
+  35%, 80% { transform: translateY(0px); opacity: 1; }
+  92%, 100% { transform: translateY(-4px); opacity: 0; }
+}
+
+@keyframes animLet {
+  0%, 25% { transform: translateY(-26px); opacity: 0; }
+  45%, 80% { transform: translateY(0px); opacity: 1; }
+  92%, 100% { transform: translateY(-4px); opacity: 0; }
+}
+
+@keyframes animGo {
+  0%, 35% { transform: translateY(-26px); opacity: 0; }
+  55%, 80% { transform: translateY(0px); opacity: 1; }
+  92%, 100% { transform: translateY(-4px); opacity: 0; }
 }

@@ -1,105 +1,186 @@
-"use client";
+'use client';
 
-import { useEffect, useRef } from "react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { experiences } from "@/lib/data";
-import { Briefcase, Calendar } from "lucide-react"; // Removed MapPin
+import { useCallback, useRef, useState } from 'react';
+import { experiences } from '@/lib/data';
+import {
+  drawIn,
+  gsap,
+  revealOnScroll,
+  scrubScale,
+  trackActiveItem,
+  useIsoLayoutEffect,
+} from '@/lib/motion';
+import { useSectionIntro } from '@/components/motion/useSectionIntro';
+import SectionHead from '@/components/SectionHead';
 
-if (typeof window !== "undefined") {
-  gsap.registerPlugin(ScrollTrigger);
-}
-
+/**
+ * Selected experience — a résumé index with a spine.
+ *
+ * The storytelling here is literal: a hairline runs down the left of the list
+ * and an accent segment fills it as you read, scrubbed to scroll position, so
+ * the page shows you how far through a career you are. Each role's marker
+ * lights when the spine reaches it.
+ *
+ * Everything moving is a `transform` on an absolutely-positioned 1px element,
+ * which is about the cheapest thing a browser can animate — no layout, no
+ * paint beyond a single composited layer, and it costs the same at 390px as at
+ * 1440px.
+ */
 export default function Experience() {
   const sectionRef = useRef<HTMLElement>(null);
-  const headerRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+  const spineRef = useRef<HTMLSpanElement>(null);
+  const [active, setActive] = useState(-1);
 
-  useEffect(() => {
+  useSectionIntro(sectionRef);
+
+  const onActive = useCallback((i: number) => setActive(i), []);
+
+  useIsoLayoutEffect(() => {
+    const section = sectionRef.current;
+    const list = listRef.current;
+    if (!section || !list) return;
+
     const ctx = gsap.context(() => {
-      gsap.from(headerRef.current, {
-        scrollTrigger: { trigger: headerRef.current, start: "top 85%" },
-        y: 40,
-        opacity: 0,
-        duration: 0.8,
-        ease: "power3.out",
-      });
+      const cleanups: Array<() => void> = [];
+      const entries = gsap.utils.toArray<HTMLElement>('[data-entry]', list);
 
-      gsap.utils.toArray<HTMLElement>(".exp-card").forEach((card, i) => {
-        gsap.from(card, {
-          scrollTrigger: { trigger: card, start: "top 88%" },
-          y: 50,
-          opacity: 0,
-          duration: 0.6,
-          delay: i * 0.1,
-          ease: "back.out(0.6)",
-        });
-      });
-    }, sectionRef);
+      // Lines inside one role enter together, so the batch staggers them as a
+      // block: title, dates, company, summary, then each highlight. That
+      // order is the choreography — a résumé entry read out loud.
+      cleanups.push(
+        revealOnScroll('[data-line]', { y: 18, duration: 0.56, stagger: 0.055, start: 'top 88%' }),
+      );
+
+      cleanups.push(drawIn('[data-entry-rule]', { duration: 0.75, stagger: 0.1, delay: 0.1 }));
+
+      // The spine fills as the reader moves through the list.
+      if (spineRef.current) {
+        cleanups.push(
+          scrubScale(spineRef.current, {
+            axis: 'y',
+            trigger: list,
+            start: 'top 68%',
+            end: 'bottom 72%',
+          }),
+        );
+      }
+
+      cleanups.push(trackActiveItem(entries, onActive, { start: 'top 60%', end: 'bottom 40%' }));
+
+      return () => cleanups.forEach((c) => c());
+    }, section);
 
     return () => ctx.revert();
-  }, []);
+  }, [onActive]);
 
   return (
     <section
       ref={sectionRef}
       id="experience"
-      className="relative py-24 md:py-32 px-6 md:px-12 overflow-hidden"
+      /* No `px-*` here: `.measure` already applies the sitewide gutter, and
+         stacking a second one cost 32px of every 390px screen. */
+      className="relative py-16 md:py-24"
       aria-labelledby="experience-heading"
     >
-      <div className="absolute inset-0 -z-10">
-        <div className="absolute top-1/3 left-0 w-80 h-80 bg-primary/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-0 w-80 h-80 bg-primary/5 rounded-full blur-3xl" />
-      </div>
+      <div className="measure">
+        <SectionHead
+          index="03"
+          label="Career"
+          id="experience-heading"
+          title="Selected Experience."
+          lede="Building modern digital products across software engineering, product development, cloud, and cybersecurity—with a focus on performance, scalability, clean architecture, and continuous learning."
+          className="mb-12 md:mb-16"
+        />
 
-      <div className="max-w-5xl mx-auto">
-        <div ref={headerRef} className="text-center mb-16 md:mb-20">
-          <p className="text-primary text-sm font-semibold tracking-wider uppercase mb-3">
-            Career
-          </p>
-          <h2
-            id="experience-heading"
-            className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent"
-          >
-            My Experience
-          </h2>
-          <div className="w-20 h-1 bg-gradient-to-r from-primary to-primary/40 rounded-full mx-auto mb-6" />
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto leading-relaxed">
-            Building and refining frontend systems with a focus on performance,
-            scalability, and clean architecture.
-          </p>
-        </div>
+        <div ref={listRef} className="relative">
+          {/* The spine: a resting hairline with an accent segment filling it. */}
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute bottom-0 left-0 top-0 w-px bg-[hsl(var(--foreground)_/0.14)]"
+          />
+          <span
+            ref={spineRef}
+            aria-hidden="true"
+            className="pointer-events-none absolute bottom-0 left-0 top-0 w-px origin-top bg-[hsl(var(--primary))]"
+            style={{ transform: 'scaleY(0)' }}
+          />
 
-        <div className="space-y-8">
-          {experiences.map((exp) => (
-            <div
-              key={exp.id}
-              className="exp-card relative bg-card/50 backdrop-blur-sm border border-border rounded-2xl p-6 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/5 hover:border-primary/30 hover:-translate-y-1"
-            >
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
-                <div>
-                  <h3 className="text-2xl font-bold text-foreground">{exp.role}</h3>
-                  <div className="flex items-center gap-2 text-muted-foreground mt-1">
-                    <Briefcase className="w-4 h-4" />
-                    <span className="font-medium">{exp.company}</span>
-                    <span className="text-border">|</span>
-                    <Calendar className="w-4 h-4" />
-                    <span>{exp.duration}</span>
-                  </div>
+          {experiences.map((exp, i) => {
+            const isActive = i === active;
+            return (
+              <article
+                key={exp.id}
+                data-entry
+                className="group relative py-10 pl-6 sm:pl-10"
+              >
+                {/* Marker on the spine — fills when the reader reaches it. */}
+                <span
+                  aria-hidden="true"
+                  className={`pointer-events-none absolute left-0 top-[3.1rem] h-[7px] w-[7px] -translate-x-1/2 transition-[background-color,transform] duration-300 ease-[var(--ease-spring-2)] ${
+                    isActive
+                      ? 'scale-125 bg-[hsl(var(--primary))]'
+                      : 'scale-100 bg-[hsl(var(--foreground)_/0.28)]'
+                  }`}
+                />
+
+                <div
+                  data-line
+                  className="flex flex-col justify-between gap-2 sm:flex-row sm:items-baseline sm:gap-6"
+                >
+                  <h3 className="text-2xl font-bold tracking-tight text-[hsl(var(--foreground)_/0.82)] transition-colors duration-300 ease-[var(--ease-spring-2)] group-hover:text-[hsl(var(--foreground))] sm:text-3xl">
+                    {exp.role}
+                  </h3>
+                  <span className="shrink-0 font-mono text-xs uppercase tracking-[0.16em] text-[hsl(var(--muted-foreground)_/0.6)] sm:text-right">
+                    {exp.duration}
+                  </span>
                 </div>
-              </div>
-              <p className="text-muted-foreground leading-relaxed mb-4">
-                {exp.description}
-              </p>
-              <ul className="space-y-2">
-                {exp.highlights.map((highlight, idx) => (
-                  <li key={idx} className="flex items-start gap-2 text-sm text-muted-foreground">
-                    <span className="text-primary mt-1">▹</span>
-                    {highlight}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+
+                <p
+                  data-line
+                  className={`mt-2 font-mono text-xs uppercase tracking-[0.14em] transition-colors duration-300 ${
+                    isActive
+                      ? 'text-[hsl(var(--primary-ink,var(--primary)))]'
+                      : 'text-[hsl(var(--primary-ink,var(--primary))_/0.7)]'
+                  }`}
+                >
+                  {exp.company}
+                </p>
+
+                <p
+                  data-line
+                  className="mt-4 max-w-2xl text-sm leading-relaxed text-[hsl(var(--muted-foreground)_/0.8)] sm:text-base"
+                >
+                  {exp.description}
+                </p>
+
+                <ul className="mt-5 flex flex-col gap-2">
+                  {exp.highlights.map((highlight, idx) => (
+                    <li
+                      key={idx}
+                      data-line
+                      className="flex items-start gap-3 text-sm leading-relaxed text-[hsl(var(--muted-foreground)_/0.7)]"
+                    >
+                      {/* The tick extends on hover. `scaleX`, not `width` —
+                          the visual result is identical and the browser never
+                          relayouts the line of text beside it. */}
+                      <span
+                        aria-hidden="true"
+                        className="mt-[0.6em] h-px w-5 shrink-0 origin-left scale-x-[0.6] bg-[hsl(var(--muted-foreground)_/0.4)] transition-[transform,background-color] duration-300 ease-[var(--ease-spring-2)] group-hover:scale-x-100 group-hover:bg-[hsl(var(--primary)_/0.7)]"
+                      />
+                      <span>{highlight}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <span
+                  data-entry-rule
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-x-0 bottom-0 h-px origin-left bg-[hsl(var(--foreground)_/0.14)]"
+                />
+              </article>
+            );
+          })}
         </div>
       </div>
     </section>

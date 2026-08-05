@@ -11,7 +11,7 @@ export default function NotFound() {
       <p className="text-muted-foreground mb-10 max-w-sm">
         The page you&apos;re looking for doesn&apos;t exist or has been moved.
       </p>
-      <Link href="/" className="btn-primary">
+      <Link href="/" className="btn-primary" data-magnetic>
         Back to Home
       </Link>
     </div>

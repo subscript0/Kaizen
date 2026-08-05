@@ -24,8 +24,17 @@ export function trackEvent(
   }
 }
 
-export function trackBookACall(location: string) {
-  trackEvent('book_a_call_click', { location });
+/**
+ * Fired by the primary "Hire me now" CTA, which opens WhatsApp.
+ *
+ * Renamed from `trackBookACall`/`book_a_call_click` when the CTA stopped being
+ * a Calendly booking — leaving the old event name on a button that no longer
+ * books anything would have quietly poisoned the funnel report. GA treats this
+ * as a NEW event, so historical `book_a_call_click` data stays where it is
+ * rather than being merged with clicks that mean something different.
+ */
+export function trackHireMeNow(location: string) {
+  trackEvent('hire_me_now_click', { location });
 }
 
 export function trackProjectView(projectSlug: string) {

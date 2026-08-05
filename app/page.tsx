@@ -1,31 +1,14 @@
-import Banner          from '@/components/Banner';
-import AboutMe         from '@/components/AboutMe';
-import Skills          from '@/components/Skills';
-import HowIThink       from '@/components/HowIThink';
-import InteractiveDemo from '@/components/InteractiveDemo';
-import Experience      from '@/components/Experience';
-import Projects        from '@/components/Projects';
-import GitHubStats     from '@/components/GitHubStats';
-import Testimonials    from '@/components/Testimonials';
-import Footer          from '@/components/Footer';
-import WhatsAppCTA     from '@/components/WhatsAppCTA';
-import IdeaFloatingButton from '@/components/IdeaFloatingButton';
+import Hero from '@/components/Hero';
 
+/**
+ * Home is the introduction and nothing else: who this is, what they do, the
+ * stack they work in, and where to reach them.
+ *
+ * The work index and contact block that briefly lived here were removed on
+ * request — both already have dedicated routes (`/projects`, `/contact`), and
+ * repeating them on the landing page made the introduction the smaller half of
+ * its own page.
+ */
 export default function Home() {
-  return (
-    <>
-      <Banner />
-      <AboutMe />
-      <Skills />
-      <HowIThink />
-      <InteractiveDemo />
-      <Experience />
-      <Projects />
-      <GitHubStats />
-      <Testimonials />
-      <Footer />
-      <WhatsAppCTA />
-      <IdeaFloatingButton />
-    </>
-  );
+  return <Hero />;
 }
