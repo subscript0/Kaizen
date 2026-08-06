@@ -12,6 +12,17 @@ import { TOTAL_TECHS } from '@/components/skills/capabilities';
  * two-column index (discipline → tools) is the Swiss answer to a tag soup:
  * it reads top-to-bottom as a table of contents for what this person can do.
  */
+/**
+ * Tools printed per discipline before the row is cut off with a `+n`.
+ *
+ * The panel used to print all 32, which turned the first screen of the site
+ * into an inventory: seven rows, some of them five and six names long, sitting
+ * beside the introduction. Four is enough to establish what the discipline
+ * actually is; the exact count still shows in the panel head, and "Full skill
+ * index" at the foot goes to the page that lists every one of them.
+ */
+const PER_ROW = 4;
+
 const CATEGORY_LABELS: Record<string, string> = {
   frontend: 'Frontend',
   backend: 'Backend',
@@ -47,16 +58,21 @@ export default function CapabilityPanel() {
               <span>{CATEGORY_LABELS[category.category] ?? category.category}</span>
             </dt>
             <dd className="mt-2 flex flex-wrap gap-x-2.5 gap-y-1 font-sans text-[0.9375rem] font-medium leading-snug tracking-tight text-[hsl(var(--foreground))]">
-              {category.items.map((item, j) => (
+              {category.items.slice(0, PER_ROW).map((item, j, shown) => (
                 <span key={item.name}>
                   {item.name}
-                  {j < category.items.length - 1 && (
+                  {j < shown.length - 1 && (
                     <span aria-hidden="true" className="ml-2.5 text-[hsl(var(--foreground)/0.28)]">
                       /
                     </span>
                   )}
                 </span>
               ))}
+              {category.items.length > PER_ROW && (
+                <span className="text-[hsl(var(--foreground)/0.45)]">
+                  +{category.items.length - PER_ROW}
+                </span>
+              )}
             </dd>
           </div>
         ))}

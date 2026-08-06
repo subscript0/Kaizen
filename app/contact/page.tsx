@@ -10,8 +10,8 @@ export const metadata: Metadata = {
 /**
  * /contact, read top to bottom:
  *
- *   ContactHero   a plate of motion that opens to full bleed as you scroll,
- *                 then the brief and a ledger of numbers that count up
+ *   ContactHero   the masthead, then the brief and a ledger of numbers that
+ *                 count up
  *   Contact       02 the services, told against a sticky plate that shows
  *                 whichever one you are reading
  *                 03 a pinned statement that lights word by word

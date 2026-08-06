@@ -14,8 +14,8 @@ export const metadata: Metadata = {
 /**
  * /about, read top to bottom:
  *
- *   AboutHero    a plate of motion that opens to full bleed as you scroll,
- *                then the thesis and a ledger of numbers that count up
+ *   AboutHero    the masthead, then the thesis and a ledger of numbers that
+ *                count up
  *   AboutMe      three chapters against a sticky portrait plate that names
  *                whichever one you are reading
  *   Manifesto    a pinned statement that lights word by word as you scroll
@@ -23,8 +23,8 @@ export const metadata: Metadata = {
  *   Experience   the career list (owned elsewhere)
  *   AboutOutro   the contact lockup and the terminal band
  *
- * Both pinned sections (AboutHero, Manifesto) are `position: sticky` inside a
- * tall runway. Nothing on this page listens for `wheel` or calls
+ * The one pinned section left (Manifesto) is `position: sticky` inside a tall
+ * runway. Nothing on this page listens for `wheel` or calls
  * `window.scrollTo` — the document scrolls normally the whole way down, which
  * is what keeps keyboard, touch, scrollbar dragging and find-in-page working.
  */

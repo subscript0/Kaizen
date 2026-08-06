@@ -26,7 +26,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: 'cover',
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#080808' },
+    { media: '(prefers-color-scheme: light)', color: '#f7f7f7' },
     { media: '(prefers-color-scheme: dark)', color: '#080808' },
   ],
 };
@@ -83,15 +83,27 @@ export const metadata: Metadata = {
 // focus ring, and --primary-ink (the same colour, made legible as type).
 const FLASH_SCRIPT = `(function(){try{
   var r=document.documentElement;
-  var b=localStorage.getItem('theme-base')||'dark';
+  var b=localStorage.getItem('theme-base')||'light';
   var B={
-    light:{'--background':'0 0% 97%','--background-light':'0 0% 100%','--foreground':'0 0% 9%','--foreground-muted':'0 0% 38%','--muted-foreground':'0 0% 38%','--muted':'0 0% 88%','--border':'0 0% 84%','--input':'0 0% 84%','--secondary':'0 0% 12%','--secondary-foreground':'0 0% 97%','--primary-ink':'44 100% 27%','--accent':'0 0% 100%','--accent-foreground':'0 0% 9%'},
-    dark: {'--background':'0 0% 3%','--background-light':'0 0% 4%','--foreground':'60 3% 93%','--foreground-muted':'56 5% 56%','--muted-foreground':'56 5% 56%','--muted':'56 5% 56%','--border':'0 0% 14%','--input':'0 0% 14%','--secondary':'0 0% 95%','--secondary-foreground':'0 0% 12%','--primary-ink':'50 100% 60%','--accent':'0 0% 4%','--accent-foreground':'60 3% 93%'}
+    light:{'--background':'0 0% 97%','--background-light':'0 0% 100%','--foreground':'0 0% 9%','--foreground-muted':'0 0% 38%','--muted-foreground':'0 0% 38%','--muted':'0 0% 88%','--border':'0 0% 84%','--input':'0 0% 84%','--secondary':'0 0% 12%','--secondary-foreground':'0 0% 97%','--accent':'0 0% 100%','--accent-foreground':'0 0% 9%'},
+    dark: {'--background':'0 0% 3%','--background-light':'0 0% 4%','--foreground':'60 3% 93%','--foreground-muted':'56 5% 56%','--muted-foreground':'56 5% 56%','--muted':'56 5% 56%','--border':'0 0% 14%','--input':'0 0% 14%','--secondary':'0 0% 95%','--secondary-foreground':'0 0% 12%','--accent':'0 0% 4%','--accent-foreground':'60 3% 93%'}
   };
-  var A={'--primary':'50 100% 60%','--primary-hover':'50 100% 50%','--ring':'50 100% 60%','--primary-foreground':'0 0% 8%'};
-  var bv=B[b]||B.dark;
+  /* Accent presets are keyed by mode — the default 'ink' accent inverts with
+     the surface, so it cannot be a single triplet. Mirrors accentThemes. */
+  var ACC={
+    ink:   {p:{light:'0 0% 9%',dark:'60 3% 93%'},   h:{light:'0 0% 25%',dark:'60 3% 78%'},   i:{light:'0 0% 9%',dark:'60 3% 93%'}},
+    yellow:{p:{light:'50 100% 60%',dark:'50 100% 60%'},h:{light:'50 100% 50%',dark:'50 100% 50%'},i:{light:'44 100% 27%',dark:'50 100% 60%'}}
+  };
+  var onPrimary=function(t){return parseFloat(t.split(' ')[2])>=55?'0 0% 8%':'0 0% 97%';};
+  var bv=B[b]||B.light;
   for(var k in bv)r.style.setProperty(k,bv[k]);
-  for(var k in A)r.style.setProperty(k,A[k]);
+  var a=ACC[localStorage.getItem('theme-accent')]||ACC.ink;
+  var p=a.p[b];
+  r.style.setProperty('--primary',p);
+  r.style.setProperty('--primary-hover',a.h[b]);
+  r.style.setProperty('--ring',p);
+  r.style.setProperty('--primary-ink',a.i[b]);
+  r.style.setProperty('--primary-foreground',onPrimary(p));
 
   /* Custom accent — mirrors hexToHslTriplet (lib/color.ts) + applyCustomAccent. */
   var hex=localStorage.getItem('theme-custom-accent');
@@ -110,6 +122,7 @@ const FLASH_SCRIPT = `(function(){try{
     r.style.setProperty('--ring',h+' '+s+'% '+l+'%');
     /* On light paper an accent lighter than ~32% is unreadable as type. */
     r.style.setProperty('--primary-ink',h+' '+s+'% '+(b==='light'?Math.min(l,32):l)+'%');
+    r.style.setProperty('--primary-foreground',onPrimary(h+' '+s+'% '+l+'%'));
   }
 
   /* Background variant. 'pure' means "leave what the base already set". */

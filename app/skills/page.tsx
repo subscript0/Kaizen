@@ -24,8 +24,8 @@ export const metadata: Metadata = {
 /**
  * Read top to bottom, built on the same devices as /about:
  *
- *   SkillsHero          a plate of shipped work that opens to full bleed as you
- *                       scroll, the title parting around it
+ *   SkillsHero          the masthead — an ordinary header, so the thesis is on
+ *                       screen without scrolling
  *   SkillsThesis        the statement and the ledger of figures that count up
  *   DisciplineChapters  seven chapters, each against its own sticky plate, with
  *                       its tools listed in their real brand colours
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
  *                       time, at the pace you scroll
  *   SkillsOutro         the closing lockup and the terminal spec band
  *
- * Every pinned moment on this page (SkillsHero, MarkWall) and every plate in
+ * Every pinned moment on this page (MarkWall) and every plate in
  * DisciplineChapters is `position: sticky` inside ordinary flow. Nothing here
  * listens for `wheel`, calls `window.scrollTo`, or asks GSAP for a pin — so the
  * document scrolls normally the whole way down and keyboard, touch, scrollbar

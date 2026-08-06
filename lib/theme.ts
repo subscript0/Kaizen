@@ -1,5 +1,5 @@
 export type BaseMode   = 'dark' | 'light';
-export type AccentName = 'yellow';
+export type AccentName = 'ink' | 'yellow';
 
 export interface BaseTheme {
   label: string;
@@ -12,21 +12,27 @@ export interface BaseTheme {
   /** Neutral chip fill — always the INVERSE of the surface, in both modes. */
   secondary: string;
   secondaryForeground: string;
-  /**
-   * The accent used as TEXT. Pure #FBD509 on a near-white page is ~1.5:1 —
-   * unreadable — so light mode sets type in a dark amber that still reads as
-   * "the yellow", while dark mode keeps the yellow itself. Fills (buttons,
-   * progress bars, dots) keep using `--primary` in both modes; only ink swaps.
-   */
-  primaryInk: string;
 }
 
 export interface AccentTheme {
   label: string;
   swatch: string;
-  primary: string;
-  primaryHover: string;
-  ring: string;
+  /**
+   * Keyed by base mode, because a NEUTRAL accent has to invert with the surface
+   * it sits on — near-black on paper, near-white on the dark page — while a
+   * chromatic one (yellow) is the same colour in both. A single string could
+   * only express the second case, which is why the default accent could never
+   * be anything but a bright hue before.
+   */
+  primary: Record<BaseMode, string>;
+  primaryHover: Record<BaseMode, string>;
+  /**
+   * The accent used as TEXT. Pure #FBD509 on a near-white page is ~1.5:1 —
+   * unreadable — so the yellow accent sets light-mode type in a dark amber that
+   * still reads as "the yellow", while dark mode keeps the yellow itself. Fills
+   * (buttons, progress bars, dots) keep using `--primary`; only ink swaps.
+   */
+  ink: Record<BaseMode, string>;
 }
 
 export const baseModes: Record<BaseMode, BaseTheme> = {
@@ -43,7 +49,6 @@ export const baseModes: Record<BaseMode, BaseTheme> = {
     border:              '0 0% 84%',    // #d6d6d6 — hairline that survives paper
     secondary:           '0 0% 12%',    // ink chip
     secondaryForeground: '0 0% 97%',
-    primaryInk:          '44 100% 27%', // #8a6700 — 4.7:1 on paper
   },
   // Dark mode — Motion.design values, unchanged.
   dark: {
@@ -56,23 +61,45 @@ export const baseModes: Record<BaseMode, BaseTheme> = {
     border:              '0 0% 14%',    // #242424
     secondary:           '0 0% 95%',    // paper chip
     secondaryForeground: '0 0% 12%',
-    primaryInk:          '50 100% 60%', // the yellow itself — 13:1 on #080808
   },
 };
 
 export const accentThemes: Record<AccentName, AccentTheme> = {
+  // The default. An accent does not have to be a HUE — here it is the ink
+  // itself, so the page carries one colour (the paper) and one contrast (the
+  // type). Emphasis comes from weight, scale and rules rather than from a
+  // second colour competing with the photography and the work.
+  ink: {
+    label: 'Ink',
+    swatch: '#171717',
+    primary:      { light: '0 0% 9%',   dark: '60 3% 93%' },
+    primaryHover: { light: '0 0% 25%',  dark: '60 3% 78%' },
+    ink:          { light: '0 0% 9%',   dark: '60 3% 93%' },
+  },
   yellow: {
     label: 'Yellow',
     swatch: '#FBD509',
-    primary: '50 100% 60%',      // #FBD509
-    primaryHover: '50 100% 50%', // #E6C000
-    ring: '50 100% 60%',
+    primary:      { light: '50 100% 60%', dark: '50 100% 60%' }, // #FBD509
+    primaryHover: { light: '50 100% 50%', dark: '50 100% 50%' }, // #E6C000
+    ink:          { light: '44 100% 27%', dark: '50 100% 60%' }, // #8a6700 — 4.7:1 on paper
   },
 };
 
+/**
+ * Type that stays legible ON a fill of the given colour. `--primary-foreground`
+ * used to be the constant `0 0% 8%`, which is only correct for a bright accent:
+ * the moment the accent is dark (the neutral default, or any dark colour the
+ * visitor picks) every primary button became near-black on near-black.
+ */
+export function onPrimary(primaryTriplet: string): string {
+  const lightness = parseFloat(primaryTriplet.split(/\s+/)[2]);
+  return lightness >= 55 ? '0 0% 8%' : '0 0% 97%';
+}
+
 export function buildCSSVars(base: BaseMode, accent: AccentName): Record<string, string> {
   const b = baseModes[base];
-  const a = accentThemes[accent] ?? accentThemes.yellow;
+  const a = accentThemes[accent] ?? accentThemes.ink;
+  const primary = a.primary[base];
   return {
     '--background':           b.background,
     '--background-light':     b.backgroundLight,
@@ -86,13 +113,11 @@ export function buildCSSVars(base: BaseMode, accent: AccentName): Record<string,
     '--muted':                b.muted,
     '--border':               b.border,
     '--input':                b.border,
-    '--ring':                 a.ring,
-    '--primary':              a.primary,
-    '--primary-hover':        a.primaryHover,
-    '--primary-ink':          b.primaryInk,
-    // Near-black, ALWAYS. This was '0 0% 100%' — white type on #FBD509 is
-    // 1.4:1, i.e. every primary button on the site was illegible.
-    '--primary-foreground':   '0 0% 8%',
+    '--ring':                 primary,
+    '--primary':              primary,
+    '--primary-hover':        a.primaryHover[base],
+    '--primary-ink':          a.ink[base],
+    '--primary-foreground':   onPrimary(primary),
     '--secondary':            b.secondary,
     '--secondary-foreground': b.secondaryForeground,
     // `--accent` is the neutral surface token (Tailwind maps `accent` to it).
@@ -102,5 +127,8 @@ export function buildCSSVars(base: BaseMode, accent: AccentName): Record<string,
   };
 }
 
-export const DEFAULT_BASE:   BaseMode   = 'dark';
-export const DEFAULT_ACCENT: AccentName = 'yellow';
+// The site opens on paper with an ink accent. Dark mode and the yellow are
+// both still one tap away in the theme picker — they are no longer the first
+// impression, which read as loud to everyone who wasn't already used to it.
+export const DEFAULT_BASE:   BaseMode   = 'light';
+export const DEFAULT_ACCENT: AccentName = 'ink';

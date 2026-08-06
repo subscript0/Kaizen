@@ -101,7 +101,7 @@ export default function HowIThink() {
           label="Philosophy"
           id="approach-heading"
           title="How I Build."
-          lede="I believe great software comes from understanding both people and technology. Every decision—from design to deployment—should make the product easier to use, easier to maintain, and easier to scale."
+          lede="Every decision — design through deployment — should make the product easier to use, easier to maintain, easier to scale."
           className="mb-12 md:mb-16"
         />
 

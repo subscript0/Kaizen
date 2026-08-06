@@ -2,25 +2,18 @@
 
 import Link from 'next/link';
 import { motion, useReducedMotion } from 'framer-motion';
-import ScrollExpandMedia from '@/components/ui/scroll-expansion-hero';
+import PageMasthead from '@/components/PageMasthead';
 import RevealText from '@/components/about/RevealText';
 import CountUp from '@/components/about/CountUp';
 import { personalInfo } from '@/lib/data';
 
 /**
- * The /about opening.
+ * The /about opening — a masthead, then the thesis and the ledger of numbers,
+ * all in ordinary document flow.
  *
- * A pinned plate of motion that opens to full bleed as the visitor scrolls,
- * then hands straight over to the thesis and the ledger of numbers. Everything
- * below the plate is ordinary document flow — see the long note in
- * `components/ui/scroll-expansion-hero.tsx` for why that matters.
- *
- * The plate is `/public/aboutme.jpeg` — this page's own image, not the video
- * poster the home page opens on. Every route now leads with its own frame so
- * no two openings read as the same picture.
- *
- * Media is local. The site's accent is picked at runtime, so nothing here
- * hardcodes a colour.
+ * This used to be a pinned plate in a 300dvh runway that opened to full bleed
+ * as you scrolled, over a parallaxing copy of `/public/aboutme.jpeg`. See the
+ * note in `components/PageMasthead.tsx` for what went and why.
  */
 
 /**
@@ -46,18 +39,15 @@ export default function AboutHero() {
   const reduce = useReducedMotion();
 
   return (
-    <ScrollExpandMedia
-      mediaType="image"
-      mediaSrc="/aboutme.jpeg"
-      mediaAlt="The word “ME” set in heavy white capitals on black."
-      bgImageSrc="/aboutme.jpeg"
-      title="About Kaizen"
-      titleId="about-hero-heading"
-      date="01 — About"
-      scrollToExpand="Scroll to expand"
-      textBlend
-    >
-      <div className="measure pb-16 pt-20 md:pb-24 md:pt-28">
+    <>
+      <PageMasthead
+        index="01"
+        label="About"
+        title="About Kaizen"
+        titleId="about-hero-heading"
+      />
+
+      <div className="measure pb-16 pt-12 md:pb-24 md:pt-16">
         {/* ── Thesis ────────────────────────────────────────────────────── */}
         <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[1.25rem_1fr] lg:gap-8">
           <span
@@ -77,7 +67,7 @@ export default function AboutHero() {
             />
 
             <RevealText
-              text="I'm a full-stack developer focused on building modern, scalable web applications with clean architecture and intuitive user experiences. From frontend interfaces and backend systems to databases, cloud infrastructure, and product design, I enjoy creating software that's fast, maintainable, and built to solve real-world problems while continuously expanding my expertise in cybersecurity."
+              text="Frontend, backend, databases, cloud. I build the whole thing — and I'm deep in security alongside it."
               className="text-lede mt-7 max-w-2xl"
               stagger={0.012}
               delay={0.12}
@@ -134,6 +124,6 @@ export default function AboutHero() {
           </a>
         </motion.div>
       </div>
-    </ScrollExpandMedia>
+    </>
   );
 }

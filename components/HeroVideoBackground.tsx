@@ -41,8 +41,19 @@ export default function HeroVideoBackground() {
   // barely moves. The image stays an image, reads light enough for the hero's
   // near-black type, and keeps the one colour that matches the site's accent.
   // The flat wash then does only the small amount of levelling still needed.
-  const washOpacity = isLight ? 0.18 : 0.48;
-  const screenLift = 0.72;
+  //
+  // ── Why the footage is now greyscale ──────────────────────────────────────
+  // Even lifted to paper, the clip kept its two hues — navy sky, amber lamp —
+  // and they were the only chroma on the light theme, which tinted the whole
+  // masthead blue. Desaturating leaves the thing the clip is actually for
+  // (movement and depth behind the nameplate) and removes the thing that read
+  // as "too colourful". Dark mode keeps a trace of warmth: on #080808 the clip
+  // is nearly silhouette already.
+  const washOpacity = isLight ? 0.34 : 0.48;
+  const screenLift = 0.82;
+  const videoFilter = isLight
+    ? 'grayscale(1) contrast(1.06) brightness(1.04)'
+    : 'grayscale(0.85) contrast(1.05)';
 
   useEffect(() => {
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -86,7 +97,7 @@ export default function HeroVideoBackground() {
           autoPlay={canAnimate}
           preload="auto"
           className="h-full w-full object-cover"
-          style={isLight ? { filter: 'saturate(0.9) contrast(1.05)' } : undefined}
+          style={{ filter: videoFilter }}
         >
           {canAnimate && <source src="/videos/hero-bg.mp4" type="video/mp4" />}
         </video>

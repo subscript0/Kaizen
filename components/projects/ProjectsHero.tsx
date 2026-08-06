@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { motion, useReducedMotion } from 'framer-motion';
-import ScrollExpandMedia from '@/components/ui/scroll-expansion-hero';
+import PageMasthead from '@/components/PageMasthead';
 import RevealText from '@/components/about/RevealText';
 import CountUp from '@/components/about/CountUp';
 import { personalInfo, projects } from '@/lib/data';
@@ -10,22 +10,10 @@ import { personalInfo, projects } from '@/lib/data';
 /**
  * The /projects opening — the sibling of `components/about/AboutHero`.
  *
- * Same device, different subject: a plate that opens to full bleed as the
- * visitor scrolls, then hands over to the thesis and a ledger of numbers.
- * Everything below the plate is ordinary document flow — see the long note in
- * `components/ui/scroll-expansion-hero.tsx` for why that matters.
- *
- * The plate is this page's own image, `/public/project.jpeg`. Every route now
- * leads with its own frame — home keeps `/me.jpg`, /about `/aboutme.jpeg`,
- * /skills `/skill.jpeg` — so no two openings read as the same picture. Media is
- * local; the site's accent is picked at runtime, so nothing here hardcodes a
- * colour.
- *
- * The masthead is deliberately short. `ScrollExpandMedia` slides the two halves
- * of the title apart by `min(9.5vw, 180px)` as the plate opens, and that travel
- * has to fit in the free space either side of the lockup — a 13-character
- * masthead leaves ~28px per side at 390px against a 37px shift, which clips.
- * Two short words never can.
+ * A masthead, then the thesis and a ledger of numbers, in ordinary document
+ * flow. This used to be a plate pinned in a 290dvh runway that opened to full
+ * bleed as you scrolled; see the note in `components/PageMasthead.tsx` for why
+ * it isn't any more.
  */
 
 /** Every technology that appears in the work, in the order it first appears. */
@@ -44,22 +32,16 @@ export default function ProjectsHero() {
   const reduce = useReducedMotion();
 
   return (
-    <ScrollExpandMedia
-      mediaType="image"
-      /* The plate is `object-cover`, so at its collapsed 340x414 the visitor
-         sees only the middle ~40% of the square frame. This image survives that
-         crop: the lit bulb and the drawing hand sit dead centre, so the subject
-         is whole at every step of the expansion. */
-      mediaSrc="/project.jpeg"
-      mediaAlt="A hand drawing a glowing lightbulb on paper, wired into a sketched diagram of product ideas."
-      bgImageSrc="/project.jpeg"
-      title="The Work"
-      titleId="projects-hero-heading"
-      date="01 — Projects"
-      scrollToExpand="Scroll to expand"
-      textBlend
-    >
-      <div className="measure pb-16 pt-20 md:pb-24 md:pt-28">
+    <>
+      <PageMasthead
+        index="01"
+        label="Projects"
+        title="The Work"
+        titleId="projects-hero-heading"
+        meta={`${projects.length} products`}
+      />
+
+      <div className="measure pb-16 pt-12 md:pb-24 md:pt-16">
         {/* ── Thesis ────────────────────────────────────────────────────── */}
         <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[1.25rem_1fr] lg:gap-8">
           <span
@@ -79,7 +61,7 @@ export default function ProjectsHero() {
             />
 
             <RevealText
-              text="Personal finance, project management, invoicing and study tracking. Every one started as a problem I actually had, and every one had to keep working long after launch."
+              text="Personal finance, project management, invoicing, study tracking. Each one started as a problem I actually had."
               className="text-lede mt-7 max-w-2xl"
               stagger={0.012}
               delay={0.12}
@@ -132,6 +114,6 @@ export default function ProjectsHero() {
           </a>
         </motion.div>
       </div>
-    </ScrollExpandMedia>
+    </>
   );
 }

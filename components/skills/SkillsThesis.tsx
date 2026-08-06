@@ -55,7 +55,7 @@ export default function SkillsThesis() {
             />
 
             <RevealText
-              text="Seven disciplines, read one at a time. Each one opens on a plate that names it, then lists the tools it is built from and what each of them does in the work."
+              text="Seven disciplines, one at a time — each with the tools it is built from, and what they do in the work."
               className="text-lede mt-7 max-w-2xl"
               stagger={0.012}
               delay={0.12}

@@ -1,31 +1,24 @@
 'use client';
 
 import { motion, useReducedMotion } from 'framer-motion';
-import ScrollExpandMedia from '@/components/ui/scroll-expansion-hero';
+import PageMasthead from '@/components/PageMasthead';
 import RevealText from '@/components/about/RevealText';
 import CountUp from '@/components/about/CountUp';
 import { personalInfo } from '@/lib/data';
 import { trackHireMeNow } from '@/lib/utils';
 
 /**
- * The /contact opening — the same device the /about page opens on.
- *
- * A pinned plate of motion that expands to full bleed as the visitor scrolls,
- * then hands straight over to the brief and a ledger of numbers. Everything
- * below the plate is ordinary document flow; see the long note in
- * `components/ui/scroll-expansion-hero.tsx` for why the expansion is driven by
- * real scroll position instead of a `wheel` lock.
+ * The /contact opening — the same masthead the /about page opens on, then the
+ * brief and a ledger of numbers, in ordinary document flow. This used to be a
+ * plate pinned in a tall runway; see `components/PageMasthead.tsx`.
  *
  * The ledger is contact-specific rather than a re-run of /about's career
  * numbers: what a visitor about to write a message wants to know is how long
  * they will wait, how many ways in there are, and who actually does the work.
  *
- * The plate is `/public/contact.jpeg` — this page's own image, not the video
- * poster the home page opens on. Every route now leads with its own frame so
- * no two openings read as the same picture.
- *
- * Media is local. The site's accent is chosen at runtime, so nothing here
- * hardcodes a hue.
+ * The plate it replaced carried `/public/contact.jpeg` — a stippled handshake
+ * on blue, which brought a second and third colour onto a page that is
+ * otherwise ink on paper. The file is still in `/public`.
  */
 
 const LEDGER = [
@@ -38,18 +31,16 @@ export default function ContactHero() {
   const reduce = useReducedMotion();
 
   return (
-    <ScrollExpandMedia
-      mediaType="image"
-      mediaSrc="/contact.jpeg"
-      mediaAlt="Two hands meeting in a firm handshake, drawn as a stippled illustration on blue."
-      bgImageSrc="/contact.jpeg"
-      title="Let’s Build"
-      titleId="contact-hero-heading"
-      date="01 — Contact"
-      scrollToExpand="Scroll to expand"
-      textBlend
-    >
-      <div className="measure pb-16 pt-20 md:pb-24 md:pt-28">
+    <>
+      <PageMasthead
+        index="01"
+        label="Contact"
+        title="Let’s Build"
+        titleId="contact-hero-heading"
+        meta="Replies within 24h"
+      />
+
+      <div className="measure pb-16 pt-12 md:pb-24 md:pt-16">
         {/* ── The brief ─────────────────────────────────────────────────── */}
         <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[1.25rem_1fr] lg:gap-8">
           <span
@@ -69,7 +60,7 @@ export default function ContactHero() {
             />
 
             <RevealText
-              text="A product from scratch, a feature bolted onto something live, or an hour spent working out whether the idea holds up at all — all three are a fair reason to write."
+              text="From scratch, bolted onto something live, or just an idea you want checked — all three are a fair reason to write."
               className="text-lede mt-7 max-w-2xl"
               stagger={0.012}
               delay={0.12}
@@ -132,6 +123,6 @@ export default function ContactHero() {
           </a>
         </motion.div>
       </div>
-    </ScrollExpandMedia>
+    </>
   );
 }

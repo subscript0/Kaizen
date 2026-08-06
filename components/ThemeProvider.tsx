@@ -14,6 +14,7 @@ import {
   DEFAULT_ACCENT,
   DEFAULT_BASE,
   buildCSSVars,
+  onPrimary,
 } from '@/lib/theme';
 import { hexToHslTriplet } from '@/lib/color';
 
@@ -106,6 +107,11 @@ function applyCustomAccent(hex: string, base: BaseMode) {
   root.style.setProperty('--primary', `${hue} ${sat}% ${light}%`);
   root.style.setProperty('--primary-hover', `${hue} ${sat}% ${Math.max(0, light - 8)}%`);
   root.style.setProperty('--ring', `${hue} ${sat}% ${light}%`);
+  // Button labels follow the picked colour's lightness. Without this the
+  // foreground stayed at whatever the last preset set, so picking anything dark
+  // — now easy to do, since the default accent IS dark — printed near-black
+  // type on a near-black fill.
+  root.style.setProperty('--primary-foreground', onPrimary(`${hue} ${sat}% ${light}%`));
 
   // On light paper an accent lighter than ~32% lightness is unreadable as
   // type, so the ink variant is darkened until it isn't. On dark the accent is

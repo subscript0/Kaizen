@@ -106,7 +106,7 @@ export default function AboutMe() {
  * The image sits BEHIND the existing typographic layer rather than replacing
  * it, so the plate still carries Fig. 01, the wordmark, the spec rows and the
  * live "Reading" row. Two things keep that type legible over a photo, and both
- * are borrowed from `scroll-expansion-hero`, which solves the same problem:
+ * are borrowed from the scroll-expanding hero this site used to open on:
  *
  *  - the photo is pulled most of the way to monochrome, so it cannot introduce
  *    a second and third colour into a page built on greyscale plus one accent;
