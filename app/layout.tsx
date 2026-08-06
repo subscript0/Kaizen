@@ -12,7 +12,6 @@ import './globals.css';
 import Navbar from '@/components/Navbar';
 import ScrollProgress from '@/components/ScrollProgress';
 import StickyEmail from '@/components/StickyEmail';
-import SoundProvider from '@/components/SoundProvider';
 import ThemeProvider from '@/components/ThemeProvider';
 import MagneticCursor from '@/components/motion/MagneticCursor';
 import MagneticField from '@/components/motion/MagneticField';
@@ -167,7 +166,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <ScrollProgress />
           <StickyEmail />
           <Navbar />
-          <SoundProvider />
           {/*
             NO `z-10` here — that was a site-wide bug, not a style choice.
             `position: relative` + `z-index: 10` made <main> a stacking context,
