@@ -12,7 +12,6 @@ import './globals.css';
 import Navbar from '@/components/Navbar';
 import ScrollProgress from '@/components/ScrollProgress';
 import ThemeProvider from '@/components/ThemeProvider';
-import MagneticCursor from '@/components/motion/MagneticCursor';
 import MagneticField from '@/components/motion/MagneticField';
 import CosmicBackdrop from '@/components/CosmicBackdrop';
 import { personalInfo } from '@/lib/data';
@@ -164,12 +163,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               the wrong colour; it is doing MORE work now, not less. */}
           <CosmicBackdrop />
           <div className="noise-overlay" aria-hidden="true" />
-          {/* SpotlightCursor removed: it painted a soft accent-coloured radial
-              gradient under the pointer, which is exactly the ambient glow the
-              Swiss direction rules out — and MagneticCursor already provides a
-              (sharp, hairline) custom cursor. Re-add the import + tag below to
-              restore it. */}
-          <MagneticCursor />
+          {/* Both custom cursors are gone; the site uses the native pointer.
+              SpotlightCursor painted a soft accent radial gradient under the
+              pointer — the ambient glow the Swiss direction rules out.
+              MagneticCursor replaced the pointer with a dot and a morphing
+              box, and mounted both nodes unconditionally while only ever
+              positioning them from a `mousemove`-driven rAF loop — so a 10px
+              accent square sat dead centre of every page until the visitor
+              moved the mouse, and sat in the top-left corner permanently for
+              anyone on `prefers-reduced-motion`. */}
           {/* Drives every `data-magnetic` button on the site — see the note in
               MagneticField for why this is one controller and not a wrapper. */}
           <MagneticField />
