@@ -118,6 +118,14 @@ function applyCustomAccent(hex: string, base: BaseMode) {
   // used as-is — picking a bright one is the whole point there.
   const inkLight = base === 'light' ? Math.min(light, 32) : light;
   root.style.setProperty('--primary-ink', `${hue} ${sat}% ${inkLight}%`);
+
+  // The same colour resolved for a DARK surface — see buildCSSVars. A custom
+  // hex is one colour in both modes, so there is no preset to look up: the
+  // raw value is already the dark-surface answer, and it keeps its full
+  // lightness because nothing here has to survive white paper.
+  root.style.setProperty('--primary-on-dark', `${hue} ${sat}% ${light}%`);
+  root.style.setProperty('--primary-ink-on-dark', `${hue} ${sat}% ${light}%`);
+  root.style.setProperty('--primary-foreground-on-dark', onPrimary(`${hue} ${sat}% ${light}%`));
 }
 
 function applyBackgroundVariant(base: BaseMode, lightVariant: LightVariant, darkVariant: DarkVariant) {

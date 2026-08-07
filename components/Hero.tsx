@@ -53,10 +53,17 @@ export default function Hero() {
     // the document. Below `md` the fixed mobile nav owns the bottom ~80px of
     // the viewport, so the section reserves ~96px of clearance — without it the
     // band sits under the bar and its links are untappable.
+    // `.hero-media` makes this section a DARK block in both themes and
+    // re-points the colour tokens inside it to their dark-mode values — see
+    // the block in app/globals.css. It is what lets the video play at full
+    // opacity in its original colour: the type is light, so the footage does
+    // not have to be dimmed to be readable underneath it. It is a class, not a
+    // JS-computed style, so the hero paints in the right colours on the very
+    // first frame rather than after hydration.
     <section
       id="home"
       aria-label="Introduction"
-      className="relative w-full overflow-hidden pb-[calc(6rem+env(safe-area-inset-bottom))] pt-24 sm:pt-28 md:pb-0"
+      className="hero-media relative w-full overflow-hidden pb-[calc(6rem+env(safe-area-inset-bottom))] pt-24 sm:pt-28 md:pb-0"
     >
       <HeroVideoBackground />
 

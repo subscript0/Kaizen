@@ -161,9 +161,24 @@ export function buildCSSVars(base: BaseMode, accent: AccentName): Record<string,
   const b = baseModes[base];
   const a = accentThemes[accent] ?? accentThemes.ink;
   const primary = a.primary[base];
+  const onDark = a.primary.dark;
   return {
     // Semantic state tokens follow the BASE MODE only — never the accent.
     ...buildSemanticVars(base),
+
+    // ── Accent, resolved for a DARK surface, whatever the base mode is ──
+    // The hero is a dark media block in both themes (`.hero-media` in
+    // globals.css), and the default accent is NEUTRAL — it is the ink itself,
+    // so in light mode `--primary` is near-black. Painted onto the dark hero
+    // that is invisible: the nameplate's full stop, the "available for work"
+    // dot and the primary button all vanish.
+    //
+    // These are the same accent resolved against a dark surface, which for a
+    // preset simply means its dark-mode entry. Anything sitting on a dark
+    // surface regardless of theme should use these rather than `--primary`.
+    '--primary-on-dark':            onDark,
+    '--primary-ink-on-dark':        a.ink.dark,
+    '--primary-foreground-on-dark': onPrimary(onDark),
     '--background':           b.background,
     '--background-light':     b.backgroundLight,
     '--foreground':           b.foreground,

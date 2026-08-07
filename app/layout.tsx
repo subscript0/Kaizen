@@ -112,6 +112,12 @@ const FLASH_SCRIPT = `(function(){try{
   r.style.setProperty('--ring',p);
   r.style.setProperty('--primary-ink',a.i[b]);
   r.style.setProperty('--primary-foreground',onPrimary(p));
+  /* The accent resolved for a DARK surface — the hero is a dark media block
+     in both themes, and the default accent is near-black in light mode.
+     Mirrors the --primary-on-dark block in buildCSSVars (lib/theme.ts). */
+  r.style.setProperty('--primary-on-dark',a.p.dark);
+  r.style.setProperty('--primary-ink-on-dark',a.i.dark);
+  r.style.setProperty('--primary-foreground-on-dark',onPrimary(a.p.dark));
 
   /* Custom accent — mirrors hexToHslTriplet (lib/color.ts) + applyCustomAccent. */
   var hex=localStorage.getItem('theme-custom-accent');
@@ -131,6 +137,12 @@ const FLASH_SCRIPT = `(function(){try{
     /* On light paper an accent lighter than ~32% is unreadable as type. */
     r.style.setProperty('--primary-ink',h+' '+s+'% '+(b==='light'?Math.min(l,32):l)+'%');
     r.style.setProperty('--primary-foreground',onPrimary(h+' '+s+'% '+l+'%'));
+    /* A custom hex is one colour in both modes, so it is already its own
+       dark-surface answer — and it keeps full lightness, since nothing here
+       has to survive white paper. Mirrors applyCustomAccent. */
+    r.style.setProperty('--primary-on-dark',h+' '+s+'% '+l+'%');
+    r.style.setProperty('--primary-ink-on-dark',h+' '+s+'% '+l+'%');
+    r.style.setProperty('--primary-foreground-on-dark',onPrimary(h+' '+s+'% '+l+'%'));
   }
 
   /* Background variant. 'pure' means "leave what the base already set". */

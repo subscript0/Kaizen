@@ -20,6 +20,14 @@
        use this; fills keep using --primary. */
     --primary-ink: 50 100% 60%;
 
+    /* The accent resolved for a DARK surface, whatever the base mode is —
+       see `--primary-on-dark` in lib/theme.ts. Used by `.hero-media`, which
+       is a dark block in both themes and therefore cannot use `--primary`
+       (near-black in light mode, i.e. invisible there). */
+    --primary-on-dark: 50 100% 60%;
+    --primary-ink-on-dark: 50 100% 60%;
+    --primary-foreground-on-dark: 0 0% 8%;
+
     --secondary: 0 0% 95%;          /* neutral chip — inverse of the surface */
     --secondary-foreground: 0 0% 12%;
 
@@ -1313,6 +1321,60 @@
   bottom: 0;
   height: var(--rule);
   background: hsl(var(--primary));
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   HERO — A DARK MEDIA BLOCK, IN BOTH THEMES
+   ══════════════════════════════════════════════════════════════════════════
+   The hero carries a full-colour night-scene video. That footage is dark, so
+   the type over it has to be light — and it has to be light in LIGHT mode
+   too, where the page's own ink is near-black and would disappear into the
+   frame. Rather than recolouring two dozen elements, this re-points the
+   TOKENS those elements already resolve, scoped to the section.
+
+   Because the block is dark in both themes, the overrides are the same in
+   both: they are simply the dark-mode values from `baseModes.dark` in
+   lib/theme.ts. No mode branching, and no JS — which matters, since the hero
+   is the first paint of the landing page and must not wait for hydration to
+   pick its colours.
+
+   Keep these in step with `baseModes.dark`. They are duplicated rather than
+   derived because the theme system publishes only ONE base at a time onto
+   :root; there is no `--dark-foreground` to point at.
+
+   The one token that cannot be hardcoded is the accent, because the visitor
+   picks it. `--primary-on-dark` is that choice resolved against a dark
+   surface — see lib/theme.ts. */
+.hero-media {
+  /* The surface under (and below) the footage. Slightly lifted off pure
+     black so the video's own blacks still read as darker than the frame. */
+  --hero-surface: 0 0% 5%;
+
+  --background: var(--hero-surface);
+  --background-light: 0 0% 9%;
+  --foreground: 60 3% 93%;
+  --foreground-muted: 0 0% 70%;
+  --muted-foreground: 0 0% 70%;
+  --muted: 0 0% 70%;
+  --border: 0 0% 24%;
+  --input: 0 0% 24%;
+  --accent: 0 0% 9%;
+  --accent-foreground: 60 3% 93%;
+  --secondary: 0 0% 95%;
+  --secondary-foreground: 0 0% 12%;
+
+  /* Hairlines are drawn from --foreground, which this block has just
+     inverted, so the rule colour has to be recomputed against it. */
+  --rule-color: hsl(60 3% 93% / 0.2);
+
+  /* The accent, made to survive the dark surface in either theme. */
+  --primary: var(--primary-on-dark);
+  --primary-ink: var(--primary-ink-on-dark);
+  --primary-foreground: var(--primary-foreground-on-dark);
+  --ring: var(--primary-on-dark);
+
+  background-color: hsl(var(--hero-surface));
+  color: hsl(var(--foreground));
 }
 
 .transition-transform {
