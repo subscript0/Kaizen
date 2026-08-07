@@ -1,8 +1,8 @@
 'use client';
-import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import gsap from 'gsap';
 import { EASE } from '@/lib/motion';
 import ThemeSwitcher from './ThemeSwitcher';
@@ -48,38 +48,15 @@ const moreLinks: MobileTab[] = [
   { label: 'Contact', href: '/contact', icon: Mail },
 ];
 
-/**
- * The full-screen menu carries the WHOLE site map, not just the two
- * destinations that overflow the tab bar. A full-screen takeover for two links
- * is disproportionate — it reads as a mistake. Showing everything makes the
- * takeover earn its size, and means "More" answers "where else can I go?"
- * rather than "what didn't fit?".
- */
-const menuLinks: MobileTab[] = [...mobileTabs, ...moreLinks];
-
 const springy = { type: 'spring', stiffness: 350, damping: 26 } as const;
 
-/**
- * `closing` is a real state, not a flourish. The exit is a CSS animation, so
- * the node has to stay mounted until it finishes — `animationend` on the panel
- * is what promotes `closing` to `closed`. Unmounting on click instead would
- * cut the animation off at frame one.
- */
-type MenuState = 'closed' | 'open' | 'closing';
-
 export default function Navbar() {
-  const [menuState, setMenuState] = useState<MenuState>('closed');
+  const [moreOpen, setMoreOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [reduce, setReduce] = useState(false);
   const pathname = usePathname();
   const introRef = useRef<HTMLDivElement>(null);
   const { base } = useTheme();
-
-  const menuOpen = menuState !== 'closed';
-  const closeMenu = useCallback(
-    () => setMenuState((s) => (s === 'open' ? 'closing' : s)),
-    [],
-  );
 
   // The theme system swaps CSS-variable values rather than toggling a
   // `.dark` class, so Tailwind's `dark:` variant never fires here — read
@@ -111,29 +88,22 @@ export default function Navbar() {
     return () => mq.removeEventListener('change', sync);
   }, []);
 
-  // ── Lock body scroll while the menu is up ─────────────────────────────────
-  // Held through `closing` too: releasing it the instant the close is
-  // requested lets the page behind jump back to its scroll position while the
-  // panel is still visibly folding away over the top of it.
+  // ── Lock body scroll while the "More" sheet is open ───────────────────────
   useEffect(() => {
-    document.body.style.overflow = menuOpen ? 'hidden' : '';
+    document.body.style.overflow = moreOpen ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
-  }, [menuOpen]);
+  }, [moreOpen]);
 
-  // ── Close on Escape ───────────────────────────────────────────────────────
+  // ── Close "More" on Escape ─────────────────────────────────────────────────
   useEffect(() => {
-    if (menuState !== 'open') return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') closeMenu(); };
+    if (!moreOpen) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setMoreOpen(false); };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [menuState, closeMenu]);
+  }, [moreOpen]);
 
-  // ── Close whenever the route changes ──────────────────────────────────────
-  // Straight to `closed`, not `closing`: the page underneath is already the
-  // new route, so animating the old menu off it is animating a lie. Tapping a
-  // link inside the menu plays the exit via `closeMenu`; this is the net for
-  // navigations that start somewhere else (back button, a link on the page).
-  useEffect(() => { setMenuState('closed'); }, [pathname]);
+  // ── Close "More" whenever the route changes ───────────────────────────────
+  useEffect(() => { setMoreOpen(false); }, [pathname]);
 
   // ── Editorial entrance for the desktop pill — respects reduced-motion ─────
   useEffect(() => {
@@ -151,18 +121,8 @@ export default function Navbar() {
     return () => ctx.revert();
   }, [reduce]);
 
-  const moreActive = moreLinks.some((l) => isActive(l.href)) || menuOpen;
+  const moreActive = moreLinks.some((l) => isActive(l.href)) || moreOpen;
   const bubbleTransition = reduce ? { duration: 0 } : springy;
-
-  /**
-   * `animationend` bubbles, so every `.menu-row` in the list fires this too.
-   * Only the panel's own animation marks the exit as finished — without the
-   * target check the first row to finish would unmount the menu mid-animation.
-   */
-  const onPanelAnimationEnd = (e: React.AnimationEvent<HTMLDivElement>) => {
-    if (e.target !== e.currentTarget) return;
-    setMenuState((s) => (s === 'closing' ? 'closed' : s));
-  };
 
   return (
     <>
@@ -232,6 +192,87 @@ export default function Navbar() {
         className="fixed inset-x-0 bottom-0 z-[60] px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-2 md:hidden"
       >
         <div className="relative mx-auto max-w-[420px]">
+          {/* Tap-outside-to-close backdrop */}
+          <AnimatePresence>
+            {moreOpen && (
+              <motion.button
+                key="backdrop"
+                type="button"
+                aria-hidden="true"
+                tabIndex={-1}
+                onClick={() => setMoreOpen(false)}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: reduce ? 0 : 0.2 }}
+                className="fixed inset-0 z-[55] cursor-default bg-background/50 backdrop-blur-[2px]"
+              />
+            )}
+          </AnimatePresence>
+
+          {/* "More" sheet */}
+          <AnimatePresence>
+            {moreOpen && (
+              <motion.div
+                key="sheet"
+                id="mobile-more-menu"
+                role="menu"
+                initial={{ opacity: 0, y: 12, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 12, scale: 0.98 }}
+                transition={bubbleTransition}
+                className="absolute inset-x-0 bottom-full z-[56] mb-3 border border-foreground/10 bg-background-light/50 p-2 backdrop-blur-xl"
+              >
+                <div className="flex items-center justify-between px-3 py-2">
+                  <span className={`font-mono text-[11px] uppercase tracking-wider ${navTextMuted}`}>
+                    More
+                  </span>
+                  <motion.button
+                    type="button"
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => setMoreOpen(false)}
+                    aria-label="Close menu"
+                    className={`rounded-full p-1 ${navTextMuted} ${navTextMutedHover}`}
+                  >
+                    <X size={16} />
+                  </motion.button>
+                </div>
+
+                <div className="flex flex-col gap-0.5">
+                  {moreLinks.map((item) => {
+                    const Icon = item.icon;
+                    const active = isActive(item.href);
+                    return (
+                      <MotionLink
+                        key={item.label}
+                        href={item.href}
+                        role="menuitem"
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => setMoreOpen(false)}
+                        aria-current={active ? 'page' : undefined}
+                        className={`micro flex items-center gap-3 px-3 py-3 transition-colors ${
+                          active
+                            ? '!text-[hsl(var(--primary))]'
+                            : `${navTextMuted} hover:bg-foreground/5 ${navTextMutedHover}`
+                        }`}
+                      >
+                        <Icon size={18} strokeWidth={1.75} />
+                        {item.label}
+                      </MotionLink>
+                    );
+                  })}
+                </div>
+
+                <div className="mt-1 flex items-center justify-between border-t border-foreground/10 px-3 pt-2">
+                  <span className={`font-mono text-[11px] uppercase tracking-wider ${navTextMuted}`}>
+                    Theme
+                  </span>
+                  <ThemeSwitcher />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           {/* The bar itself */}
           {/* Opacity raised from /35: at that level page copy read straight
               through the bar on long routes (legal pages, guestbook), colliding
@@ -273,10 +314,10 @@ export default function Navbar() {
             <motion.button
               type="button"
               whileTap={{ scale: 0.92 }}
-              onClick={() => setMenuState((s) => (s === 'open' ? 'closing' : 'open'))}
-              aria-haspopup="dialog"
-              aria-expanded={menuState === 'open'}
-              aria-controls="mobile-menu"
+              onClick={() => setMoreOpen((v) => !v)}
+              aria-haspopup="menu"
+              aria-expanded={moreOpen}
+              aria-controls="mobile-more-menu"
               className="relative flex flex-1 flex-col items-center justify-end gap-1 py-2.5"
             >
               {moreActive && (
@@ -298,80 +339,6 @@ export default function Navbar() {
           </div>
         </div>
       </nav>
-
-      {/* ══ Mobile — full-screen menu ═════════════════════════════════════════
-          Every moving part is a CSS keyframe (`.menu-*` in app/globals.css);
-          React contributes nothing but the `data-state` string. That is why
-          `closing` exists — see the MenuState note at the top of this file.
-
-          Rendered OUTSIDE the <nav> above on purpose. Inside it, the menu
-          would inherit that element's `bottom-0` positioning context and its
-          `max-w-[420px]` column, so a "full-screen" overlay would be neither
-          full-screen nor at the top of the page. ── */}
-      {menuOpen && (
-        <div
-          id="mobile-menu"
-          data-state={menuState}
-          role="dialog"
-          aria-modal="true"
-          aria-label="Site menu"
-          className="menu-overlay md:hidden"
-        >
-          {/* Tap-anywhere-outside to dismiss. A real <button> rather than a
-              div with onClick, so it is reachable and operable by keyboard. */}
-          <button
-            type="button"
-            aria-label="Close menu"
-            onClick={closeMenu}
-            className="menu-scrim cursor-default"
-          />
-
-          <div className="menu-panel" onAnimationEnd={onPanelAnimationEnd}>
-            <div className="menu-head">
-              <span className="micro micro--strong">Menu</span>
-              <button
-                type="button"
-                onClick={closeMenu}
-                aria-label="Close menu"
-                /* 44px box around a 16px glyph — the icon is the affordance,
-                   the padding is the tap target. */
-                className={`-m-3 p-3 ${navTextMuted} ${navTextMutedHover}`}
-              >
-                <X size={18} />
-              </button>
-            </div>
-
-            <nav className="menu-list" aria-label="Site menu">
-              {menuLinks.map((item, i) => {
-                const active = isActive(item.href);
-                return (
-                  <Link
-                    key={item.label}
-                    href={item.href}
-                    onClick={closeMenu}
-                    aria-current={active ? 'page' : undefined}
-                    className="menu-row menu-link"
-                    style={{ '--step': i } as CSSProperties}
-                  >
-                    <span className="menu-link__index" aria-hidden="true">
-                      {String(i + 1).padStart(2, '0')}
-                    </span>
-                    {item.label}
-                  </Link>
-                );
-              })}
-            </nav>
-
-            <div
-              className="menu-row menu-foot"
-              style={{ '--step': menuLinks.length } as CSSProperties}
-            >
-              <span className="micro">Theme</span>
-              <ThemeSwitcher />
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 }
