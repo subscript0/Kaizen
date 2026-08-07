@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { ArrowRight, Github, Twitter, MessageCircle, type LucideIcon } from 'lucide-react';
 import { personalInfo, socialLinks } from '@/lib/data';
 import { trackHireMeNow } from '@/lib/utils';
@@ -89,12 +90,21 @@ export default function Hero() {
             <div className="col-span-4 min-[769px]:col-span-7">
               <div className="animate-fade-rise flex items-center gap-3">
                 {/* The avatar is small on purpose: it is an identity mark next
-                    to the greeting, not a portrait plate. */}
-                <img
+                    to the greeting, not a portrait plate.
+
+                    `next/image` rather than a bare <img>: the source is a
+                    32KB JPEG being painted into a 48px box on the landing
+                    page, so this ships a resized, modern-format file instead
+                    of the full original. `priority` because it is above the
+                    fold — without it Next lazy-loads, which on the one route
+                    every visitor lands on means the identity mark pops in
+                    after the greeting it belongs to. */}
+                <Image
                   src="/me.jpg"
                   alt={`${personalInfo.name}'s profile avatar`}
                   width={48}
                   height={48}
+                  priority
                   className="rule-t rule-b rule-l rule-r h-12 w-12 shrink-0 object-cover"
                 />
                 <span className="micro">Hello — my name is</span>

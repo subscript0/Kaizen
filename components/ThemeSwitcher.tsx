@@ -323,6 +323,16 @@ export default function ThemeSwitcher() {
           role="slider"
           tabIndex={0}
           aria-label="Saturation and brightness"
+          /* `role="slider"` REQUIRES aria-valuenow; without it a screen reader
+             announces the control but no value, so this was a slider that
+             refused to say where it was. Awkward here because the box is two
+             dimensional and the role only models one axis: saturation is the
+             horizontal one and takes the numeric slot, and `aria-valuetext`
+             overrides the announcement so both figures are actually read out.
+             (The hue slider below is genuinely 1D and needs no such trick.) */
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={Math.round(hsv.s)}
           aria-valuetext={`Saturation ${Math.round(hsv.s)}%, brightness ${Math.round(hsv.v)}%`}
           onPointerDown={handleSVDown}
           onPointerMove={handleSVMove}
