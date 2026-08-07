@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import type { CSSProperties } from 'react';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
@@ -36,19 +37,31 @@ const QUEUE = [
 export default function BlogPage() {
   return (
     <>
+      {/* The static routes have no GSAP scroll reveal at all — nothing on them
+          moved, ever. `.step-in` is a pure-CSS entrance, so it costs no JS and
+          cannot collide with `[data-reveal]` (which does not exist here).
+          `--step` is the row index; see the keyframes in app/globals.css. */}
       <div className="measure pt-32 lg:pt-40">
-        <p className="micro micro--accent mb-6">01 — Writing</p>
+        <p className="step-in micro micro--accent mb-6" style={{ '--step': 0 } as CSSProperties}>
+          01 — Writing
+        </p>
 
-        <h1 className="section-title text-[hsl(var(--foreground))]">
+        <h1
+          className="step-in section-title text-[hsl(var(--foreground))]"
+          style={{ '--step': 1 } as CSSProperties}
+        >
           Blog<span className="accent">.</span>
         </h1>
 
-        <p className="text-lede mt-6">
+        <p className="step-in text-lede mt-6" style={{ '--step': 2 } as CSSProperties}>
           Notes on frontend architecture, performance patterns, and building products that hold up
           after launch. Nothing published yet — the first pieces are drafted below.
         </p>
 
-        <div className="mt-10 flex flex-wrap items-center gap-3">
+        <div
+          className="step-in mt-10 flex flex-wrap items-center gap-3"
+          style={{ '--step': 3 } as CSSProperties}
+        >
           <Link href="/projects" className="btn btn-primary" data-magnetic>
             See the work instead
           </Link>

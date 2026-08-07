@@ -1168,6 +1168,349 @@
   }
 }
 
+/* ══════════════════════════════════════════════════════════════════════════
+   MULTI-STEP CONTENT TRANSITION
+   ══════════════════════════════════════════════════════════════════════════
+   `fade-rise` above is a single move: everything travels and fades together,
+   which is why a stack of it reads as one soft blur rather than as a sequence.
+   This runs the entrance in three distinct STEPS inside one animation, so the
+   eye gets something to follow:
+
+     0 → 45%   the line WIPES open from its own baseline (clip-path), while
+               it is still sitting low. Nothing has settled yet.
+     45 → 72%  the wipe is complete; the block travels up past its resting
+               position and the letter-spacing closes to normal.
+     72 → 100% it settles back down onto the baseline.
+
+   Steps 2 and 3 overlap slightly on purpose — a hard stop between them reads
+   as a stutter, not as a step.
+
+   ── Why clip-path and not opacity for step 1 ──
+   The whole site is drawn with hairlines on a flat surface; a cross-fade
+   turns type grey halfway through, which on paper looks like a rendering
+   fault. A wipe keeps the ink at full strength and reveals it instead.
+
+   `clip-path` establishes a containing block for `position: fixed`
+   descendants and clips anything that leaves the box. Put this on TYPE and on
+   self-contained blocks — never on a wrapper that holds a drawer, a sticky
+   element or a crop mark that sits outside its parent's bounds.
+
+   ── Staggering ──
+   Set `--step` to the item's index; the delay is derived. It is a number, not
+   a time, so a caller cannot accidentally pass `90ms` into a `calc()` that
+   expects a unitless multiplier:
+
+     <p className="step-in" style={{ '--step': 1 }}>
+
+   Do NOT put this on `[data-reveal]` / `[data-line]` elements. Those are
+   driven by GSAP, which writes its own inline opacity and transform — the two
+   systems would fight over the same properties and the loser is whichever
+   runs second. This is for content GSAP does not touch: above-the-fold
+   mastheads, and the static routes that have no scroll reveal at all.
+
+   ── What this animates, and what it deliberately does not ──
+   `transform`, `opacity`, `clip-path`. Nothing else. An earlier draft closed
+   the letter-spacing across the steps, which looks lovely and forces a full
+   layout pass on every single frame — the exact thing rule 1 in lib/motion.ts
+   exists to prevent. A tracking change is not worth relayouting a masthead
+   sixty times a second. ── */
+@keyframes step-in {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 26px, 0);
+    clip-path: inset(0 0 100% 0);
+  }
+  45% {
+    opacity: 1;
+    clip-path: inset(0 0 0 0);
+  }
+  72% {
+    opacity: 1;
+    transform: translate3d(0, -5px, 0);
+    clip-path: inset(0 0 0 0);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+.step-in {
+  animation: step-in 0.92s var(--ease-spring-2) both;
+  animation-delay: calc(var(--step, 0) * 90ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .step-in {
+    animation: none;
+    opacity: 1;
+    transform: none;
+    clip-path: none;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   CUBIC PAGE TRANSITION
+   ══════════════════════════════════════════════════════════════════════════
+   The route change reads as the page being one face of a cube that turns.
+   Geometry lives here; the timeline is driven from `app/template.tsx`, which
+   owns the failure contract (see the long note in that file — nothing in this
+   transition is allowed to leave the page hidden or covered).
+
+   The stage holds the perspective. It must be a FIXED, full-viewport box that
+   clips: a face rotating on X sweeps outside its own bounds at the midpoint
+   of the turn, and without `overflow: hidden` that sweep extends the document
+   and hands the page a horizontal scrollbar mid-navigation. ── */
+.cube-stage {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  /* Distance of the viewer from the z=0 plane. Shallower than this and the
+     face distorts into a wedge on wide screens; deeper and the turn flattens
+     out into a plain slide and stops reading as a cube at all. */
+  perspective: 1400px;
+  perspective-origin: 50% 0%;
+}
+
+.cube-face {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  /* ── Why the face is 200% wide ──
+     A plane rotating away from the viewer does not stay a rectangle: it
+     projects as a TRAPEZOID that narrows with depth. Hinged at the top and
+     turned -40deg, a face the exact size of the viewport shrinks to ~0.71 of
+     its width at the trailing edge — which exposes a triangular wedge of the
+     page in each top corner for the whole turn. That does not read as a cube;
+     it reads as a broken overlay.
+
+     The narrowest the projection ever gets is p / (p + h) — with p = 1400 and
+     a 900px-tall face that is ~0.61 — so anything past ~1.65x the viewport
+     width covers for the entire rotation. 200% is that, with margin for a
+     short viewport (a smaller h foreshortens LESS, so this is the safe end).
+
+     The stage clips, so the extra width can never reach the document: the
+     scroll width is unaffected. Verified at 390, 500 and 1440. */
+  left: -50%;
+  right: -50%;
+  background: hsl(var(--background));
+  /* Hinged along the TOP edge, so the face lifts away like a lid rather than
+     spinning about its own middle. */
+  transform-origin: 50% 0%;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  will-change: transform;
+}
+
+/* The trailing edge of the face is a hairline in the accent — the same 1px
+   the whole site is drawn with, briefly given somewhere to go. It is the only
+   thing that stays sharp through the turn, so it is what the eye tracks. */
+.cube-face::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: var(--rule);
+  background: hsl(var(--primary));
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   FULL-SCREEN MENU TRANSITION
+   ══════════════════════════════════════════════════════════════════════════
+   Pure CSS: React owns nothing but an `open` / `closing` string, and every
+   moving part is a keyframe below. The exit is a real animation rather than
+   an instant unmount, which is the whole reason for the `closing` state —
+   `animationend` on the panel is what tells React it is finally safe to
+   remove the node.
+
+   ── Mobile first, and mobile only ──
+   This is mounted under `md` only. It is `position: fixed` at 100dvh (NOT
+   100vh: on iOS `vh` excludes the collapsing URL bar, so a `100vh` overlay is
+   taller than the screen and its last row sits under the browser chrome).
+   The panel scrolls internally, and reserves the home-indicator inset at the
+   bottom so the final link is never under it. ── */
+.menu-overlay {
+  position: fixed;
+  inset: 0;
+  height: 100dvh;
+  z-index: 70; /* above the nav bar itself (z-60), below nothing else */
+  display: flex;
+  flex-direction: column;
+}
+
+.menu-scrim {
+  position: absolute;
+  inset: 0;
+  background: hsl(var(--background) / 0.72);
+  backdrop-filter: blur(8px);
+  animation: menu-scrim-in 0.28s var(--ease-spring-2) both;
+}
+
+.menu-panel {
+  position: relative;
+  display: flex;
+  min-height: 0; /* lets the link list scroll instead of pushing the footer out */
+  flex: 1;
+  flex-direction: column;
+  background: hsl(var(--background-light));
+  border-bottom: var(--rule) solid hsl(var(--border));
+  /* Hinged along the top edge, same grammar as the page transition — the menu
+     is a cube face too, it just turns toward the visitor instead of away. */
+  transform-origin: 50% 0%;
+  animation: menu-panel-in 0.42s var(--ease-spring-3) both;
+  will-change: transform, opacity;
+}
+
+/* Each row cascades in behind the panel. `--step` is the row index, set from
+   the component, so adding a link needs no new CSS. */
+.menu-row {
+  animation: menu-row-in 0.44s var(--ease-spring-2) both;
+  animation-delay: calc(140ms + var(--step, 0) * 55ms);
+}
+
+@keyframes menu-scrim-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes menu-panel-in {
+  from { opacity: 0; transform: perspective(1200px) rotateX(-14deg) translate3d(0, -12px, 0); }
+  to   { opacity: 1; transform: perspective(1200px) rotateX(0deg) translate3d(0, 0, 0); }
+}
+
+@keyframes menu-row-in {
+  from { opacity: 0; transform: translate3d(0, 18px, 0); clip-path: inset(0 0 100% 0); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); clip-path: inset(0 0 0 0); }
+}
+
+/* ── Exit ──
+   Reversing the entrance keyframes would make the rows leave bottom-first,
+   which looks like the menu collapsing INTO the tab bar it came from — right
+   idea, wrong direction, because the eye is already at the top of the list.
+   The exit is therefore its own set: everything goes at once, fast, and the
+   panel folds back along the same hinge. */
+.menu-overlay[data-state='closing'] .menu-scrim {
+  animation: menu-scrim-in 0.22s var(--ease-spring-1) reverse both;
+}
+
+.menu-overlay[data-state='closing'] .menu-panel {
+  animation: menu-panel-out 0.26s var(--ease-spring-1) both;
+}
+
+.menu-overlay[data-state='closing'] .menu-row {
+  animation: menu-scrim-in 0.14s var(--ease-spring-1) reverse both;
+  animation-delay: 0ms; /* no cascade on the way out — see above */
+}
+
+@keyframes menu-panel-out {
+  from { opacity: 1; transform: perspective(1200px) rotateX(0deg) translate3d(0, 0, 0); }
+  to   { opacity: 0; transform: perspective(1200px) rotateX(-10deg) translate3d(0, -10px, 0); }
+}
+
+/* ── Menu furniture ──
+   Full height, with only the LINK LIST scrolling. If the whole panel scrolled,
+   the close control would scroll away with it and a long list would strand the
+   visitor inside a menu with no visible exit. */
+.menu-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem var(--gutter);
+  border-bottom: var(--rule) solid var(--rule-color);
+}
+
+.menu-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain; /* don't hand the scroll back to the page behind */
+  -webkit-overflow-scrolling: touch;
+  padding: 0.5rem 0;
+}
+
+.menu-link {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  /* 64px tall — this is the primary navigation on a phone and it is being
+     tapped with a thumb, so the row is generous well past the 44px minimum. */
+  min-height: 64px;
+  padding: 0 var(--gutter);
+  border-bottom: var(--rule) solid var(--rule-color);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  text-transform: uppercase;
+  color: hsl(var(--foreground));
+  transition: background-color var(--duration-base) ease, color var(--duration-base) ease;
+}
+
+.menu-link[aria-current='page'] {
+  color: hsl(var(--primary-ink, var(--primary)));
+}
+
+.menu-link:active {
+  background: hsl(var(--foreground) / 0.06);
+}
+
+/* The row index, set in mono against the big grotesque — the same spec-sheet
+   grammar the mastheads use. */
+.menu-link__index {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  color: hsl(var(--foreground-muted));
+}
+
+.menu-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem var(--gutter);
+  /* Clears the home indicator. The menu sits ABOVE the bottom tab bar, so it
+     cannot borrow that bar's own reserve. */
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  border-top: var(--rule) solid var(--rule-color);
+}
+
+/* Reduced motion: the menu still has to OPEN and CLOSE — it is navigation,
+   not decoration — so the states remain, they just stop travelling.
+   Everything keeps a token fade, and crucially keeps a real (if tiny)
+   animation: `.menu-panel`'s `animationend` is what tells React the closing
+   state is finished and the node can be removed. Set `animation: none` here
+   and that event never fires, so the menu would never close. */
+@media (prefers-reduced-motion: reduce) {
+  .menu-scrim,
+  .menu-panel,
+  .menu-row {
+    animation-name: menu-scrim-in;
+    animation-duration: 0.14s;
+    animation-delay: 0ms;
+    animation-direction: normal;
+    transform: none;
+    clip-path: none;
+  }
+
+  .menu-overlay[data-state='closing'] .menu-scrim,
+  .menu-overlay[data-state='closing'] .menu-panel,
+  .menu-overlay[data-state='closing'] .menu-row {
+    animation-name: menu-scrim-in;
+    animation-duration: 0.14s;
+    animation-delay: 0ms;
+    /* `reverse`, not `normal` — otherwise a closing panel fades IN and then
+       vanishes on unmount, which reads as a flash. */
+    animation-direction: reverse;
+    transform: none;
+    clip-path: none;
+  }
+}
+
 .transition-transform {
   transition-property: transform;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);

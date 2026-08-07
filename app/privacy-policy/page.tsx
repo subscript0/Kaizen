@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import Link from 'next/link';
 import { personalInfo } from '@/lib/data';
 
@@ -50,18 +50,28 @@ function Bullets({ items }: { items: string[] }) {
 export default function PrivacyPolicy() {
   return (
     <>
+      {/* Multi-step entrance — see the keyframes in app/globals.css. These
+          routes carry no scroll reveal, so this is the only motion on them. */}
       <div className="measure pt-32 lg:pt-40">
-        <p className="micro micro--accent mb-6">Legal</p>
+        <p className="step-in micro micro--accent mb-6" style={{ '--step': 0 } as CSSProperties}>
+          Legal
+        </p>
 
-        <h1 className="section-title text-[hsl(var(--foreground))]">
+        <h1
+          className="step-in section-title text-[hsl(var(--foreground))]"
+          style={{ '--step': 1 } as CSSProperties}
+        >
           Privacy Policy<span className="accent">.</span>
         </h1>
 
-        <p className="text-lede mt-6">
+        <p className="step-in text-lede mt-6" style={{ '--step': 2 } as CSSProperties}>
           How this site collects, uses and safeguards the information you choose to share with it.
         </p>
 
-        <div className="rule-t mt-10 flex flex-wrap items-baseline justify-between gap-4 pt-3">
+        <div
+          className="step-in rule-t mt-10 flex flex-wrap items-baseline justify-between gap-4 pt-3"
+          style={{ '--step': 3 } as CSSProperties}
+        >
           <span className="micro">Last updated</span>
           <span className="micro micro--strong">{UPDATED}</span>
         </div>

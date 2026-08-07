@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 
 interface PageMastheadProps {
   /** Two-digit section number, e.g. "01" — the masthead is always section one. */
@@ -55,9 +55,16 @@ export default function PageMasthead({
 
   return (
     <header className="relative pt-24 sm:pt-28">
-      {/* Spec rule — bleeds the full width, its contents held to the measure. */}
+      {/* Spec rule — bleeds the full width, its contents held to the measure.
+          `.step-in` goes on the INNER `.measure`, never on the `.bleed-b`
+          wrapper: that wrapper's whole job is the hairline that runs past the
+          measure to both viewport edges, and `clip-path` on it would cut the
+          rule back to the content column. */}
       <div className="bleed-b">
-        <div className="measure flex items-baseline justify-between gap-4 py-3">
+        <div
+          className="step-in measure flex items-baseline justify-between gap-4 py-3"
+          style={{ '--step': 0 } as CSSProperties}
+        >
           <span className="micro micro--ruled">
             <span className="micro--strong">{index}</span>
             <span>{label}</span>
@@ -67,9 +74,14 @@ export default function PageMasthead({
       </div>
 
       <div className="measure pt-10 sm:pt-14">
+        {/* Was `.animate-fade-rise` — one soft move for the whole lockup. The
+            masthead now arrives in steps (wipe, overshoot, settle) and the
+            three rows are offset by `--step`, so the eye reads spec rule →
+            title → standfirst in that order instead of seeing one blur. */}
         <h1
           id={titleId}
-          className="animate-fade-rise font-sans text-[clamp(2.75rem,8vw,5.5rem)] font-black uppercase leading-[0.85] tracking-[-0.03em]"
+          className="step-in font-sans text-[clamp(2.75rem,8vw,5.5rem)] font-black uppercase leading-[0.85] tracking-[-0.03em]"
+          style={{ '--step': 1 } as CSSProperties}
         >
           <span className="text-[hsl(var(--foreground))]">{lead}</span>
           {trail ? (
@@ -77,7 +89,11 @@ export default function PageMasthead({
           ) : null}
         </h1>
 
-        {children ? <div className="animate-fade-rise-delay mt-6">{children}</div> : null}
+        {children ? (
+          <div className="step-in mt-6" style={{ '--step': 2 } as CSSProperties}>
+            {children}
+          </div>
+        ) : null}
       </div>
     </header>
   );

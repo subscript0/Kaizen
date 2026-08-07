@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import type { CSSProperties } from 'react';
 import Link from 'next/link';
 import BusinessIdeaForm from '@/components/BusinessIdeaForm';
 
@@ -23,13 +24,19 @@ export default function IdeaPage() {
             ← Back to home
           </Link>
 
+          {/* Multi-step entrance — see the keyframes in app/globals.css. */}
           <header className="mt-8">
-            <p className="micro">01 — Let’s build</p>
-            <h1 className="text-display mt-4 text-foreground">
+            <p className="step-in micro" style={{ '--step': 0 } as CSSProperties}>
+              01 — Let’s build
+            </p>
+            <h1
+              className="step-in text-display mt-4 text-foreground"
+              style={{ '--step': 1 } as CSSProperties}
+            >
               Drop an
               <span className="accent block">Idea.</span>
             </h1>
-            <p className="text-lede mt-6">
+            <p className="step-in text-lede mt-6" style={{ '--step': 2 } as CSSProperties}>
               Got a product in your head or need something built? Walk me through it in three quick
               steps. I’ll come back with an honest scope and quote within{' '}
               <strong className="text-foreground">24 hours</strong> — no pressure, no sales pitch.

@@ -6,15 +6,31 @@ import gsap from 'gsap';
 import { useIsoLayoutEffect } from '@/lib/motion';
 
 /**
- * Route transition — a registration wipe.
+ * Route transition — a cubic turn.
  *
- * `template.tsx` remounts on every navigation, so each new route starts with
- * five full-height bands already covering the viewport. They lift off the top
- * edge one after another, left to right, each dragging a hairline accent rule
- * along its trailing edge — so what the eye actually follows is five
- * registration marks sweeping up the sheet, which is the same 1px the entire
- * site is drawn with, briefly given somewhere to go. The destination's name
- * sits centred in mono underneath while they clear.
+ * `template.tsx` remounts on every navigation, so each new route starts with a
+ * full-viewport panel already covering it. That panel is one face of a cube:
+ * it is hinged along the TOP edge of the screen and turns away from the viewer
+ * on the X axis, lifting off like a lid to reveal the incoming page, which is
+ * itself turning in on the same axis from the opposite direction. The
+ * destination's name sits centred in mono underneath while the face clears.
+ *
+ * The face drags a hairline accent rule along its trailing edge — the same 1px
+ * the entire site is drawn with, briefly given somewhere to go. Through a 3D
+ * turn that rule is the only element that stays geometrically sharp, so it is
+ * what the eye actually tracks.
+ *
+ * Geometry (perspective, hinge, the trailing rule) lives in `.cube-stage` /
+ * `.cube-face` in app/globals.css; this file owns only the timeline and the
+ * failure contract below.
+ *
+ * ── Mobile ──
+ * The face is fine at any width: it is `position: fixed` inside a stage that
+ * clips, so its mid-turn sweep cannot reach the document. The CONTENT tilt is
+ * not — a rotateX on the page wrapper expands the scrollable overflow area,
+ * which on a phone shows up as the page twitching its scroll height on every
+ * navigation. So the tilt is desktop-only (`MOBILE_Q`); below that breakpoint
+ * the content keeps the plain vertical rise it always had.
  *
  * ── The three rules this had to satisfy ──────────────────────────────────
  *
@@ -52,13 +68,15 @@ import { useIsoLayoutEffect } from '@/lib/motion';
  *        visible page.
  */
 
-const BAND_COUNT = 5;
-const BAND_DURATION = 0.27; // one band's travel
-// 0.05s lead-in + 4 gaps × 0.03 + 0.27 travel ⇒ the last band is clear of the
-// viewport at 440ms. The viewport itself stops being covered much earlier than
-// that, when the *first* band clears at ~320ms.
-const BAND_STAGGER = 0.03;
+// 0.05s lead-in + 0.4s turn ⇒ the face is clear of the viewport at 450ms, the
+// same budget the five-band wipe this replaces ran to. The viewport stops
+// being *covered* much earlier, at roughly the halfway point of the turn.
+const FACE_DURATION = 0.4;
+const FACE_ANGLE = -92; // deg. Past 90 so the face is edge-on then gone, not hanging flat.
 const CONTENT_RISE = 16; // px
+const CONTENT_TILT = 6; // deg — desktop only, see the header note
+const PERSPECTIVE = 1200; // px, matched to `.cube-stage`'s own perspective
+const MOBILE_Q = '(max-width: 767.98px)';
 const BLOCK_MS = 90; // pointer events swallowed only while genuinely opaque
 const WATCHDOG_MS = 1200;
 
@@ -85,14 +103,14 @@ function routeLabel(pathname: string): string {
 
 export default function Template({ children }: { children: React.ReactNode }) {
   const stageRef = useRef<HTMLDivElement>(null);
-  const bandsRef = useRef<HTMLDivElement>(null);
+  const faceRef = useRef<HTMLDivElement>(null);
   const labelRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
 
   useIsoLayoutEffect(() => {
     const stage = stageRef.current;
-    const bandWrap = bandsRef.current;
+    const face = faceRef.current;
     const label = labelRef.current;
     const content = contentRef.current;
     if (!content) return;
@@ -139,7 +157,7 @@ export default function Template({ children }: { children: React.ReactNode }) {
       // Nothing to animate over: the first paint is never transitioned, a
       // hidden tab cannot be trusted to tick, and either way the page must
       // just be there.
-      if (!isNavigation || hidden || !stage || !bandWrap || !label) {
+      if (!isNavigation || hidden || !stage || !face || !label) {
         reveal();
         return;
       }
@@ -152,12 +170,11 @@ export default function Template({ children }: { children: React.ReactNode }) {
       stage.style.display = 'block';
       stage.style.pointerEvents = 'auto';
 
-      const bands = Array.from(bandWrap.children) as HTMLElement[];
-
       if (reduce) {
-        // Fade only. No bands lifting, no travel, no rise on the content —
-        // just the covering colour dissolving off the new page.
-        gsap.set(bands, { yPercent: 0 });
+        // Fade only. No turn, no tilt, no rise on the content — a rotating
+        // plane filling the viewport is precisely the vestibular trigger this
+        // preference exists for. Just the covering colour dissolving off.
+        gsap.set(face, { rotationX: 0 });
         gsap.set(label, { opacity: 0 });
         stage.style.pointerEvents = 'none';
         const tl = gsap.timeline({ onComplete: reveal });
@@ -170,10 +187,23 @@ export default function Template({ children }: { children: React.ReactNode }) {
         };
       }
 
-      gsap.set(bands, { yPercent: 0 });
+      // A phone gets the turn on the overlay but not on the page beneath it.
+      const isMobile = window.matchMedia(MOBILE_Q).matches;
+
+      gsap.set(face, { rotationX: 0, transformOrigin: '50% 0%' });
       gsap.set(label, { opacity: 0, y: 5 });
       // Transform only — see the header. The page is never hidden.
-      gsap.set(content, { y: CONTENT_RISE, willChange: 'transform' });
+      gsap.set(content, {
+        y: CONTENT_RISE,
+        willChange: 'transform',
+        ...(isMobile
+          ? {}
+          : {
+              rotationX: CONTENT_TILT,
+              transformOrigin: '50% 100%',
+              transformPerspective: PERSPECTIVE,
+            }),
+      });
 
       const tl = gsap.timeline({ onComplete: reveal });
 
@@ -187,18 +217,25 @@ export default function Template({ children }: { children: React.ReactNode }) {
           undefined,
           BLOCK_MS / 1000,
         )
+        // The face turns away on its top hinge. `power4.inOut` keeps it flat
+        // and opaque for the first third — that is what covers the swap — then
+        // takes it edge-on and gone in a hurry.
         .to(
-          bands,
-          {
-            yPercent: -100,
-            duration: BAND_DURATION,
-            ease: 'power4.inOut',
-            stagger: BAND_STAGGER,
-          },
+          face,
+          { rotationX: FACE_ANGLE, duration: FACE_DURATION, ease: 'power4.inOut' },
           0.05,
         )
         .to(label, { opacity: 0, duration: 0.13, ease: 'power1.in' }, 0.1)
-        .to(content, { y: 0, duration: 0.42, ease: 'power3.out' }, 0.08);
+        .to(
+          content,
+          {
+            y: 0,
+            ...(isMobile ? {} : { rotationX: 0 }),
+            duration: 0.42,
+            ease: 'power3.out',
+          },
+          0.08,
+        );
 
       return () => {
         clearTimeout(watchdog);
@@ -221,27 +258,12 @@ export default function Template({ children }: { children: React.ReactNode }) {
       <div
         ref={stageRef}
         aria-hidden="true"
-        className="fixed inset-0 z-[9995] overflow-hidden"
+        className="cube-stage z-[9995]"
         style={{ display: 'none', pointerEvents: 'none' }}
       >
-        <div ref={bandsRef} className="absolute inset-0 flex">
-          {Array.from({ length: BAND_COUNT }).map((_, i) => (
-            <div
-              key={i}
-              className="h-full flex-1 will-change-transform"
-              style={{
-                backgroundColor: 'hsl(var(--background))',
-                // The trailing edge of each band IS a hairline rule — the same
-                // 1px the whole site is drawn with. Five of them sweeping up
-                // the page in sequence is the entire idea.
-                borderBottom: '1px solid hsl(var(--primary))',
-                // A hair of vertical overlap, so sub-pixel rounding between
-                // neighbouring bands never shows a seam of the page behind.
-                marginLeft: i === 0 ? 0 : '-0.5px',
-              }}
-            />
-          ))}
-        </div>
+        {/* One face, hinged along the top edge. Geometry is in `.cube-face`;
+            the accent hairline on its trailing edge is that rule's ::after. */}
+        <div ref={faceRef} className="cube-face" />
 
         <div
           ref={labelRef}
