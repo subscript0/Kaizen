@@ -4,6 +4,7 @@ import { drawIn, gsap, refreshTriggersWhenSettled, useReveal } from '@/lib/motio
 import CountUp from '@/components/motion/CountUp';
 import { useSectionIntro } from '@/components/motion/useSectionIntro';
 import SectionHead from '@/components/SectionHead';
+import { Skeleton, SkeletonMicro, SkeletonStatRow } from '@/components/ui/skeleton';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface GHRepo {
@@ -290,14 +291,21 @@ export default function GitHubStats() {
         }
       />
 
-      {/* ── Loading ── */}
+      {/* ── Loading ──
+          Was a centred spinner in a `py-24` box, which is a different height
+          from the content it was standing in for — so the rest of /projects
+          jumped when the fetch landed. A skeleton of the real ledger (four
+          stat tiles, then the contribution plate) reserves the right box and
+          says which numbers are coming. */}
       {loading && (
-        <div className="flex items-center justify-center py-24">
-          <div className="flex flex-col items-center gap-4">
-            <div className="w-8 h-8 rounded-xl border border-border/30 border-t-primary/50 animate-spin" />
-            <p className="font-mono text-[0.7rem] uppercase tracking-[0.2em] text-muted-foreground/80">
-              Fetching from GitHub…
-            </p>
+        <div aria-busy="true">
+          <SkeletonStatRow />
+          <div className="card mb-12 p-6">
+            <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+              <SkeletonMicro className="w-40" />
+              <SkeletonMicro className="w-32" />
+            </div>
+            <Skeleton className="h-[94px] w-full" />
           </div>
         </div>
       )}
@@ -305,7 +313,7 @@ export default function GitHubStats() {
       {/* ── Error ── */}
       {error && !loading && (
         <div className="card p-8 text-center">
-          <p className="font-mono text-[0.7rem] uppercase tracking-[0.2em] text-muted-foreground/80">
+          <p className="font-mono text-[0.7rem] uppercase tracking-[0.2em] text-danger-ink">
             Could not load GitHub data
           </p>
           <p className="mt-2 text-sm text-muted-foreground/80">
@@ -375,7 +383,7 @@ export default function GitHubStats() {
               </div>
 
               {contribLoading ? (
-                <div className="h-[94px] animate-pulse rounded-lg bg-muted/40" />
+                <Skeleton className="h-[94px] w-full" />
               ) : (
                 <>
                   {/* The scroller and the track have to be SEPARATE boxes. A single

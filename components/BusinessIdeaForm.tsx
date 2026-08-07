@@ -212,7 +212,9 @@ export default function BusinessIdeaForm({ open, onClose }: Props) {
       {sent ? (
         <div className="flex flex-col gap-6">
           <div>
-            <p className="micro micro--accent">Sent</p>
+            {/* Success is a state, not the brand accent — on the default ink
+                accent this label was the same colour as ordinary body type. */}
+            <p className="micro micro--success">Sent</p>
             <h3 className="section-title mt-3 text-[clamp(1.5rem,6vw,2.25rem)] text-foreground">
               Idea received.
             </h3>

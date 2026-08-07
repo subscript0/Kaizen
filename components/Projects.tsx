@@ -166,6 +166,9 @@ export default function Projects() {
                 ref={plateRef}
                 className="crop-frame relative aspect-[4/3] w-full overflow-hidden border border-[hsl(var(--border))] bg-[hsl(var(--background-light))]"
               >
+                {/* Under every plate layer: the frame shimmers while the first
+                    thumbnail decodes instead of showing a flat empty box. */}
+                <span aria-hidden="true" className="skeleton absolute inset-0" />
                 {projects.map((project, i) => (
                   <div
                     key={project.id}
@@ -273,6 +276,7 @@ export default function Projects() {
                       aria-hidden="true"
                       className="relative block h-12 w-[4.5rem] shrink-0 overflow-hidden border border-[hsl(var(--border))] lg:hidden"
                     >
+                      <span className="skeleton absolute inset-0" />
                       <Image
                         src={project.thumbnail}
                         alt=""

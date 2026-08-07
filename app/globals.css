@@ -26,6 +26,43 @@
     --accent: 0 0% 4%;              /* neutral surface token (Tailwind `accent`) */
     --accent-foreground: 60 3% 93%;
 
+    /* ── Semantic state colours ────────────────────────────────────────────
+       These say what something MEANS (this failed, this saved, heads up),
+       which is a different job from `--primary` — the accent is a brand
+       choice the visitor can repaint from the theme picker, and a repainted
+       accent must never turn an error message green.
+
+       Each state carries the same three tokens as the accent, for the same
+       reasons (see --primary / --primary-foreground / --primary-ink above):
+
+         --x            FILL. Backgrounds, dots, bars. Tint it with Tailwind's
+                        slash syntax for surfaces — `bg-danger/10`.
+         --x-foreground INK ON THAT FILL. Hand-set per state, not derived:
+                        the lightness>=55 rule in `onPrimary()` is wrong for
+                        saturated yellows (white on amber-50% is 2.75:1).
+         --x-ink        The state used as TYPE on the page surface. Always
+                        the token to reach for when colouring words.
+
+       Values below are the DARK-mode set, matching the rest of this :root
+       block (which is the no-JS fallback). The light-mode set lives in
+       lib/theme.ts and is mirrored into the pre-paint script in
+       app/layout.tsx — change one, change all three. */
+    --success: 152 55% 45%;
+    --success-foreground: 0 0% 8%;
+    --success-ink: 152 55% 62%;
+
+    --warning: 38 92% 55%;
+    --warning-foreground: 0 0% 8%;
+    --warning-ink: 38 92% 62%;
+
+    --danger: 0 72% 46%;
+    --danger-foreground: 0 0% 97%;
+    --danger-ink: 0 80% 68%;
+
+    --info: 205 85% 52%;
+    --info-foreground: 0 0% 8%;
+    --info-ink: 205 85% 66%;
+
     --border: 0 0% 14%;
     --input: 0 0% 10%;
     --ring: 50 100% 60%;
@@ -186,6 +223,38 @@
   .micro--accent { color: hsl(var(--primary-ink, var(--primary))); }
   .micro--strong { color: hsl(var(--foreground)); }
 
+  /* State modifiers. `--accent` above is a BRAND colour and the visitor can
+     repaint it from the theme picker — which is exactly why a validation
+     error must not use it. These four say what happened, and they say the
+     same thing whatever accent is set. All take the `-ink` variant because a
+     micro-label is type, not a fill. */
+  .micro--success { color: hsl(var(--success-ink)); }
+  .micro--warning { color: hsl(var(--warning-ink)); }
+  .micro--danger  { color: hsl(var(--danger-ink)); }
+  .micro--info    { color: hsl(var(--info-ink)); }
+
+  /* A state message that has to be noticed rather than merely read: the ink,
+     a matching hairline down the left edge, and a wash of the same hue. Used
+     for form-level errors and confirmations, where a bare coloured line of
+     11px mono is too quiet to carry a failure. */
+  .state-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.625rem;
+    padding: 0.625rem 0.75rem;
+    border-left: 2px solid currentColor;
+    font-family: var(--font-mono), ui-monospace, monospace;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    line-height: 1.5;
+    text-transform: uppercase;
+  }
+  .state-note--success { color: hsl(var(--success-ink)); background: hsl(var(--success) / 0.08); }
+  .state-note--warning { color: hsl(var(--warning-ink)); background: hsl(var(--warning) / 0.1); }
+  .state-note--danger  { color: hsl(var(--danger-ink));  background: hsl(var(--danger) / 0.08); }
+  .state-note--info    { color: hsl(var(--info-ink));    background: hsl(var(--info) / 0.08); }
+
   /* Metadata separated by a hairline instead of a bullet — print, not web. */
   .micro--ruled { gap: 0.75rem; }
   .micro--ruled > * + *::before {
@@ -196,6 +265,66 @@
     margin-right: 0.75rem;
     background: var(--rule-color);
     vertical-align: middle;
+  }
+
+  /* ══ SKELETONS ═════════════════════════════════════════════════════════════
+     A loading placeholder is a PROMISE about the layout that is coming: same
+     block, same position, same size, so nothing jumps when the real content
+     lands. That makes it a layout primitive, not a spinner — a spinner tells
+     you to wait, a skeleton tells you what you are waiting for.
+
+     Drawn as a tonal wash of the foreground rather than a fixed grey, so it
+     inverts correctly with the base mode and holds up on every background
+     variant (Milky, Frost, Midnight, Espresso) without a second token.
+
+     The sweep is a pseudo-element rather than a `background-position`
+     animation because animating `background-position` on a gradient repaints
+     the whole box every frame; a transformed overlay stays on the compositor.
+     ── */
+  .skeleton {
+    position: relative;
+    overflow: hidden;
+    background: hsl(var(--foreground) / 0.07);
+    /* Skeletons are the one place a shimmer is allowed to imply motion, so
+       they must never also look interactive. */
+    pointer-events: none;
+    user-select: none;
+  }
+
+  /* Optional hairline, for placeholders standing in for a ruled plate
+     (`.card`, the crop-marked frames) rather than for a line of type. */
+  .skeleton--ruled {
+    background: transparent;
+    border: var(--rule) solid var(--rule-color);
+  }
+
+  .skeleton::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      hsl(var(--foreground) / 0.09),
+      transparent
+    );
+    animation: skeleton-sweep 1.5s var(--ease-spring-2) infinite;
+  }
+
+  @keyframes skeleton-sweep {
+    to {
+      transform: translateX(100%);
+    }
+  }
+
+  /* The base-layer reduced-motion block collapses every animation to 0.001ms,
+     which would park the sweep off the right edge — invisible, but only by
+     accident. Say it properly: no sweep, just the wash. */
+  @media (prefers-reduced-motion: reduce) {
+    .skeleton::after {
+      display: none;
+    }
   }
 
   /* ══ DISPLAY TYPE ══════════════════════════════════════════════════════════
@@ -837,42 +966,12 @@
     pointer-events: none;
   }
 
-  /* ── Sticky email rail ── */
-  .sticky-email {
-    position: fixed;
-    /* Was `-60px`, which parked the whole rail outside the viewport where
-       `body { overflow-x: hidden }` clipped it — it has never rendered on any
-       screen size. Pulled back to a real gutter offset so it actually appears
-       at `lg` and up, which is the only breakpoint that mounts it. */
-    right: 0.75rem;
-    bottom: 0;
-    writing-mode: vertical-rl;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 16px;
-    z-index: 100;
-  }
-
-  .sticky-email a {
-    font-size: 0.75rem;
-    letter-spacing: 0.1em;
-    color: hsl(var(--muted-foreground, var(--foreground-muted)));
-    text-decoration: none;
-    transition: color var(--duration-base) ease;
-  }
-
-  .sticky-email a:hover {
-    color: hsl(var(--primary));
-  }
-
-  .sticky-email::after {
-    content: '';
-    display: block;
-    width: 1px;
-    height: 80px;
-    background: hsl(var(--foreground-muted));
-  }
+  /* The sticky email rail (`.sticky-email`, components/StickyEmail.tsx) lived
+     here: a rotated mailto pinned to the right gutter above `lg`, with a
+     hairline hanging off it. Removed — it was a third copy of an address that
+     /contact and the footer already carry, it sat at z-100 over the content
+     for the whole scroll, and it only ever existed on desktop, so it was not
+     load-bearing for reaching anyone. */
 
   /* ── Ambient background layers ─────────────────────────────────────────────
      These three sit BEHIND page content. They used to rely on `main` being a
@@ -973,59 +1072,15 @@
 
 }
 
-/* ── Magnetic morph cursor (motion.dev-style, desktop only) ────────────────── */
-.has-custom-cursor,
-.has-custom-cursor * {
-  cursor: none !important;
-}
-
-.mag-cursor-dot {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 10px;
-  height: 10px;
-  border-radius: 0;
-  background: hsl(var(--primary));
-  pointer-events: none;
-  z-index: 9998;
-  will-change: transform;
-}
-
-.mag-cursor-box {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 12px;
-  height: 12px;
-  border-radius: 0;
-  border: 2px solid hsl(var(--foreground));
-  background: transparent;
-  pointer-events: none;
-  z-index: 9997;
-  will-change: transform, width, height;
-  transition: background-color 0.2s ease, border-color 0.2s ease;
-}
-
-.mag-cursor-box.is-morph {
-  background: hsl(var(--primary) / 0.1);
-  border-color: hsl(var(--primary));
-}
-
-.mag-cursor-box.is-down {
-  background: hsl(var(--primary) / 0.22);
-}
-
-@media (hover: none), (max-width: 640px) {
-  .mag-cursor-dot,
-  .mag-cursor-box {
-    display: none !important;
-  }
-  .has-custom-cursor,
-  .has-custom-cursor * {
-    cursor: auto !important;
-  }
-}
+/* The magnetic morph cursor (`.mag-cursor-dot` / `.mag-cursor-box`, and the
+   `.has-custom-cursor { cursor: none }` rule that hid the real pointer under
+   it) lived here. Removed — it rendered a 10px accent square parked dead
+   centre of the viewport on every page load, because the component always
+   mounted both nodes but only positioned them once the rAF loop received a
+   `mousemove`. Under `prefers-reduced-motion` the loop never ran at all, so
+   the square simply sat in the top-left corner forever. Buttons keep their
+   magnetic pull — that is `MagneticField` + `[data-magnetic]`, which is a
+   separate mechanism and is still mounted. */
 
 /* ── Utility classes ─────────────────────────────────────────────────────── */
 .container {

@@ -11,7 +11,6 @@ import './globals.css';
 
 import Navbar from '@/components/Navbar';
 import ScrollProgress from '@/components/ScrollProgress';
-import StickyEmail from '@/components/StickyEmail';
 import ThemeProvider from '@/components/ThemeProvider';
 import MagneticCursor from '@/components/motion/MagneticCursor';
 import MagneticField from '@/components/motion/MagneticField';
@@ -61,6 +60,7 @@ export const metadata: Metadata = {
 //   1. `baseModes` / `buildCSSVars`      → lib/theme.ts
 //   2. `applyCustomAccent`               → components/ThemeProvider.tsx
 //   3. `LIGHT_VARIANTS` / `DARK_VARIANTS`→ components/ThemeProvider.tsx
+//   4. `semantics` / `buildSemanticVars` → lib/theme.ts
 //
 // They have already drifted once: this defaulted to 'light' while its own
 // `light` entry held the DARK palette, so anyone who had actually chosen light
@@ -93,9 +93,19 @@ const FLASH_SCRIPT = `(function(){try{
     ink:   {p:{light:'0 0% 9%',dark:'60 3% 93%'},   h:{light:'0 0% 25%',dark:'60 3% 78%'},   i:{light:'0 0% 9%',dark:'60 3% 93%'}},
     yellow:{p:{light:'50 100% 60%',dark:'50 100% 60%'},h:{light:'50 100% 50%',dark:'50 100% 50%'},i:{light:'44 100% 27%',dark:'50 100% 60%'}}
   };
+  /* Semantic state tokens. Mirrors \`semantics\` in lib/theme.ts. They follow
+     the base mode only and are never touched by the accent steps below — an
+     error stays red on a site whose owner picked a red accent. Order is
+     [fill, ink-on-fill, ink-on-page]. */
+  var S={
+    light:{success:['152 62% 30%','0 0% 97%','152 70% 24%'],warning:['38 92% 50%','0 0% 8%','32 90% 30%'],danger:['0 72% 42%','0 0% 97%','0 70% 38%'],info:['210 85% 38%','0 0% 97%','210 85% 33%']},
+    dark: {success:['152 55% 45%','0 0% 8%','152 55% 62%'],warning:['38 92% 55%','0 0% 8%','38 92% 62%'],danger:['0 72% 46%','0 0% 97%','0 80% 68%'],info:['205 85% 52%','0 0% 8%','205 85% 66%']}
+  };
   var onPrimary=function(t){return parseFloat(t.split(' ')[2])>=55?'0 0% 8%':'0 0% 97%';};
   var bv=B[b]||B.light;
   for(var k in bv)r.style.setProperty(k,bv[k]);
+  var sv=S[b]||S.light;
+  for(var n in sv){r.style.setProperty('--'+n,sv[n][0]);r.style.setProperty('--'+n+'-foreground',sv[n][1]);r.style.setProperty('--'+n+'-ink',sv[n][2]);}
   var a=ACC[localStorage.getItem('theme-accent')]||ACC.ink;
   var p=a.p[b];
   r.style.setProperty('--primary',p);
@@ -164,7 +174,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               MagneticField for why this is one controller and not a wrapper. */}
           <MagneticField />
           <ScrollProgress />
-          <StickyEmail />
+          {/* StickyEmail removed: a rotated mailto pinned to the right gutter
+              on desktop only, floating at z-100 over every page. The address is
+              already on /contact and in the footer, so this was a third copy of
+              it competing with the content for the whole scroll. */}
           <Navbar />
           {/*
             NO `z-10` here — that was a site-wide bug, not a style choice.

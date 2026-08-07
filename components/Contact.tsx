@@ -421,8 +421,13 @@ export default function Contact() {
                   </p>
                 </div>
 
+                {/* `text-primary` here was unreadable on the light theme with the
+                    default ink accent (the accent IS the foreground colour there,
+                    so the confirmation looked like an un-styled paragraph) and
+                    illegible on paper with the yellow accent. It is a
+                    confirmation, so it takes the success token. */}
                 {submitted && (
-                  <p className="mt-4 text-xs text-primary" role="status">
+                  <p className="mt-4 text-xs text-success-ink" role="status">
                     Opening your email client now. If nothing happened, email me directly at{' '}
                     <a href={`mailto:${personalInfo.email}`} className="underline underline-offset-2">
                       {personalInfo.email}

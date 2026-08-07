@@ -88,8 +88,14 @@ export default async function ProjectPage({
           </div>
         </div>
 
-        {/* Hero image */}
+        {/* Hero image.
+            The `.skeleton` sits UNDER the <Image>, not in place of it: the box
+            already reserves its aspect ratio, so there is nothing to swap and
+            no client state to track — the image simply paints over the wash
+            when it decodes. On a fast connection the wash is never seen; on a
+            slow one the frame shimmers instead of sitting empty. */}
         <div className="relative w-full aspect-video rounded-xl overflow-hidden border border-border mb-20">
+          <span aria-hidden="true" className="skeleton absolute inset-0" />
           <Image
             src={project.thumbnail}
             alt={`${project.title} screenshot`}
@@ -115,9 +121,13 @@ export default async function ProjectPage({
 
         {/* Case Study cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-20">
-          <div className="p-6 rounded-xl border border-border bg-background-light">
-            <div className="w-8 h-8 rounded-lg bg-error/10 flex items-center justify-center mb-4">
-              <span className="text-error text-xs font-bold">!</span>
+          {/* `bg-error` / `text-error` were used here for months and resolved to
+              nothing — no such colour was ever registered in tailwind.config.ts,
+              so the plate rendered with an empty swatch. The registered token is
+              `danger`, and type takes the `-ink` variant. */}
+          <div className="p-6 rounded-xl border border-danger/30 bg-background-light">
+            <div className="w-8 h-8 rounded-lg bg-danger/10 flex items-center justify-center mb-4">
+              <span className="text-danger-ink text-xs font-bold">!</span>
             </div>
             <h2 className="font-bold text-foreground mb-3">The Problem</h2>
             <p className="text-sm text-muted-foreground leading-relaxed">{project.problem}</p>
@@ -131,7 +141,7 @@ export default async function ProjectPage({
           </div>
           <div className="p-6 rounded-xl border border-success/30 bg-success/5">
             <div className="w-8 h-8 rounded-lg bg-success/20 flex items-center justify-center mb-4">
-              <span className="text-success text-xs font-bold">✓</span>
+              <span className="text-success-ink text-xs font-bold">✓</span>
             </div>
             <h2 className="font-bold text-foreground mb-3">The Result</h2>
             <p className="text-sm text-muted-foreground leading-relaxed">{project.result}</p>
@@ -148,6 +158,10 @@ export default async function ProjectPage({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-20">
           {project.images.map((img, i) => (
             <div key={i} className="relative aspect-video rounded-lg overflow-hidden border border-border">
+              {/* Same idea as the hero plate above — and it matters more here,
+                  because these are `loading="lazy"` and start decoding as the
+                  reader arrives at them. */}
+              <span aria-hidden="true" className="skeleton absolute inset-0" />
               <Image
                 src={img}
                 alt={`${project.title} screenshot ${i + 1}`}

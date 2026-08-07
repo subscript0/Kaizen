@@ -50,7 +50,7 @@ const TIMEOUT_MS = 8000;
 /** One source of truth — the API validates against this and the UI renders it. */
 export const MOODS = [
   { key: 'wave', glyph: '👋', label: 'Just saying hi' },
-  { key: 'fire', glyph: '🔥', label: 'Love the work' },
+  { key: 'fire', glyph: '🔥', label: 'Love your work' },
   { key: 'idea', glyph: '💡', label: 'Got an idea' },
   { key: 'work', glyph: '🤝', label: 'Let’s work' },
   { key: 'ship', glyph: '🚀', label: 'Ship it' },

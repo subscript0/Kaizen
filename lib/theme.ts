@@ -1,6 +1,48 @@
 export type BaseMode   = 'dark' | 'light';
 export type AccentName = 'ink' | 'yellow';
 
+/** The four things the UI needs to be able to SAY, independent of the accent. */
+export type SemanticName = 'success' | 'warning' | 'danger' | 'info';
+
+/**
+ * A semantic state, in the same three parts as an accent (see AccentTheme):
+ * a FILL, the INK that stays legible on that fill, and the state used as TYPE
+ * on the page itself.
+ *
+ * `foreground` is hand-set per mode rather than run through `onPrimary()`.
+ * That helper's "lightness >= 55 → dark ink" rule is a decent guess for an
+ * arbitrary user-picked colour but it is wrong for saturated yellows — white
+ * on hsl(38 92% 50%) measures 2.75:1 — and these four values are fixed, so
+ * there is nothing to guess.
+ *
+ * All twelve triplets below are measured against their own surface:
+ * `ink` clears 4.5:1 on the mode's page colour, `foreground` clears 4.5:1 on
+ * its own `fill`.
+ */
+export interface SemanticTheme {
+  fill: string;
+  foreground: string;
+  ink: string;
+}
+
+export const semantics: Record<BaseMode, Record<SemanticName, SemanticTheme>> = {
+  // On paper the fills have to go DARK to hold white ink, and the type colours
+  // go darker still — a mid-tone green or amber is invisible on #f7f7f7.
+  light: {
+    success: { fill: '152 62% 30%', foreground: '0 0% 97%', ink: '152 70% 24%' },
+    warning: { fill: '38 92% 50%',  foreground: '0 0% 8%',  ink: '32 90% 30%'  },
+    danger:  { fill: '0 72% 42%',   foreground: '0 0% 97%', ink: '0 70% 38%'   },
+    info:    { fill: '210 85% 38%', foreground: '0 0% 97%', ink: '210 85% 33%' },
+  },
+  // On the dark page the same four hues move up in lightness instead.
+  dark: {
+    success: { fill: '152 55% 45%', foreground: '0 0% 8%',  ink: '152 55% 62%' },
+    warning: { fill: '38 92% 55%',  foreground: '0 0% 8%',  ink: '38 92% 62%'  },
+    danger:  { fill: '0 72% 46%',   foreground: '0 0% 97%', ink: '0 80% 68%'   },
+    info:    { fill: '205 85% 52%', foreground: '0 0% 8%',  ink: '205 85% 66%' },
+  },
+};
+
 export interface BaseTheme {
   label: string;
   background: string;
@@ -96,11 +138,32 @@ export function onPrimary(primaryTriplet: string): string {
   return lightness >= 55 ? '0 0% 8%' : '0 0% 97%';
 }
 
+/**
+ * Flattens the semantic table for `base` into CSS custom properties.
+ *
+ * Kept separate from the accent tokens on purpose: the accent is repaintable
+ * (preset, or any hex the visitor picks) and these are not. An error message
+ * has to stay red on a site whose owner chose a red accent, and a "saved"
+ * confirmation must not turn red because someone chose red.
+ */
+export function buildSemanticVars(base: BaseMode): Record<string, string> {
+  const table = semantics[base];
+  const vars: Record<string, string> = {};
+  for (const [name, s] of Object.entries(table)) {
+    vars[`--${name}`] = s.fill;
+    vars[`--${name}-foreground`] = s.foreground;
+    vars[`--${name}-ink`] = s.ink;
+  }
+  return vars;
+}
+
 export function buildCSSVars(base: BaseMode, accent: AccentName): Record<string, string> {
   const b = baseModes[base];
   const a = accentThemes[accent] ?? accentThemes.ink;
   const primary = a.primary[base];
   return {
+    // Semantic state tokens follow the BASE MODE only — never the accent.
+    ...buildSemanticVars(base),
     '--background':           b.background,
     '--background-light':     b.backgroundLight,
     '--foreground':           b.foreground,

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useReveal } from '@/lib/motion';
+import { SkeletonCard } from '@/components/ui/skeleton';
 import { LIMITS, MOODS, type GuestbookEntry, type MoodKey } from '@/lib/guestbook';
 
 /**
@@ -171,6 +172,9 @@ export default function GuestbookSection() {
     <section
       ref={sectionRef}
       id="guestbook"
+      /* The skeleton cards are `aria-hidden`, so this is the only signal a
+         screen reader gets that the wall is still on its way. */
+      aria-busy={status === 'loading'}
       className="pb-[max(120px,calc(104px+env(safe-area-inset-bottom)))] pt-10 md:pb-24 md:pt-16"
     >
       <div className="measure">
@@ -224,19 +228,29 @@ export default function GuestbookSection() {
               this packs them without measuring anything or shipping a masonry
               library. `break-inside-avoid` stops a card splitting across a
               column boundary. */}
+          {/* The wall's own skeleton, for the window between mount and
+              `/api/guestbook` answering. `app/guestbook/loading.tsx` draws the
+              SAME shape for the window before this component's chunk arrives,
+              so the two hand over without the layout changing.
+
+              This used to be four bare `animate-pulse` boxes at hardcoded
+              pixel heights, which is what the shared primitive replaces: a
+              card here is a card, with the glyph, index, message lines and
+              ruled footer the real one has. */}
           {status === 'loading' ? (
-            <ul aria-hidden="true" className="mt-8 columns-1 gap-4 sm:columns-2 lg:columns-3">
-              {[0, 1, 2, 3].map((i) => (
+            <ul
+              aria-hidden="true"
+              className="mt-8 columns-1 gap-4 sm:columns-2 lg:columns-3"
+            >
+              {[0, 1, 2, 3, 4].map((i) => (
                 <li key={i} className="mb-4 break-inside-avoid">
-                  <div
-                    className="rule-t rule-b rule-l rule-r animate-pulse bg-[hsl(var(--foreground)/0.04)] p-5"
-                    style={{ height: `${140 + (i % 3) * 34}px` }}
-                  />
+                  <SkeletonCard lines={i % 3 === 0 ? 4 : 2} />
                 </li>
               ))}
             </ul>
           ) : status === 'error' ? (
             <Placeholder
+              tone="danger"
               glyph="⚠"
               title="Could not load the wall."
               note="The notes are safe — this is a connection problem."
@@ -395,11 +409,8 @@ export default function GuestbookSection() {
                   <label htmlFor="guest-message" className="micro">
                     Message
                   </label>
-                  <span
-                    className={`micro ${
-                      remaining < 40 ? 'text-[hsl(var(--primary-ink,var(--primary)))]' : ''
-                    }`}
-                  >
+                  {/* Running out of room is a warning, not a brand moment. */}
+                  <span className={`micro ${remaining < 40 ? 'micro--warning' : ''}`}>
                     {remaining}
                   </span>
                 </div>
@@ -437,9 +448,18 @@ export default function GuestbookSection() {
                 />
               </div>
 
+              {/* A failed post is a failure, not an accent moment. This used to
+                  be `micro--accent`, which means it was painted in whatever
+                  colour the visitor had chosen in the theme picker — on the
+                  default ink accent that is plain foreground, i.e. an error
+                  indistinguishable from the label above it. */}
               {error ? (
-                <p role="alert" className="micro micro--accent">
+                <p role="alert" className="state-note state-note--danger">
                   {error}
+                </p>
+              ) : posted ? (
+                <p role="status" className="state-note state-note--success">
+                  Your note is up on the wall.
                 </p>
               ) : null}
 
@@ -462,7 +482,7 @@ export default function GuestbookSection() {
               </button>
 
               {status === 'offline' ? (
-                <p className="micro">
+                <p className="micro micro--info">
                   The guestbook is not connected yet — set SUPABASE_URL and
                   SUPABASE_SERVICE_ROLE_KEY to switch it on.
                 </p>
@@ -480,17 +500,24 @@ export default function GuestbookSection() {
   );
 }
 
-/** Empty / error state — same crop-marked plate the rest of the site uses. */
+/**
+ * Empty / error state — same crop-marked plate the rest of the site uses.
+ *
+ * `tone` only tints the note line. The plate's rules stay neutral on purpose:
+ * a failed fetch is worth flagging, not worth outlining the whole block in red.
+ */
 function Placeholder({
   glyph,
   title,
   note,
   action,
+  tone = 'neutral',
 }: {
   glyph: string;
   title: string;
   note: string;
   action?: React.ReactNode;
+  tone?: 'neutral' | 'danger';
 }) {
   return (
     <div className="crop-frame rule-t rule-b rule-l rule-r relative mt-8 px-6 py-16 text-center">
@@ -502,7 +529,7 @@ function Placeholder({
         {glyph}
       </p>
       <p className="mt-4 text-lg font-semibold text-foreground">{title}</p>
-      <p className="micro mt-2">{note}</p>
+      <p className={`micro mt-2 ${tone === 'danger' ? 'micro--danger' : ''}`}>{note}</p>
       {action}
     </div>
   );

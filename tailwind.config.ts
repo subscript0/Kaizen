@@ -35,6 +35,35 @@ const config: Config = {
         },
         border: 'hsl(var(--border))',
         ring: 'hsl(var(--ring))',
+
+        // Semantic state colours. Same three-token shape as `primary`:
+        //   bg-success            → the fill
+        //   bg-success/10         → a tinted surface
+        //   text-success-foreground → ink that stays legible ON that fill
+        //   text-success-ink      → the state used as TYPE on the page
+        // Reach for `-ink` whenever you are colouring words; `DEFAULT` is a
+        // fill and is not guaranteed to pass contrast as text on either paper
+        // or the dark page. See the token block in app/globals.css.
+        success: {
+          DEFAULT: 'hsl(var(--success))',
+          foreground: 'hsl(var(--success-foreground))',
+          ink: 'hsl(var(--success-ink))',
+        },
+        warning: {
+          DEFAULT: 'hsl(var(--warning))',
+          foreground: 'hsl(var(--warning-foreground))',
+          ink: 'hsl(var(--warning-ink))',
+        },
+        danger: {
+          DEFAULT: 'hsl(var(--danger))',
+          foreground: 'hsl(var(--danger-foreground))',
+          ink: 'hsl(var(--danger-ink))',
+        },
+        info: {
+          DEFAULT: 'hsl(var(--info))',
+          foreground: 'hsl(var(--info-foreground))',
+          ink: 'hsl(var(--info-ink))',
+        },
       },
 
       // Motion.design inspired typography
