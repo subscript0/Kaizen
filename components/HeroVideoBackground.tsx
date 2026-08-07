@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 
 /**
  * Looping backdrop for the hero, scoped to the section (not fixed to the
@@ -19,13 +19,26 @@ import { useEffect, useRef, useState } from 'react';
  * scene stays visible, fading into the section's own background beneath it.
  * `sm` and up (wider than tall) get the original full-bleed cover.
  *
- * Autoplay is gated behind a client-only prefers-reduced-motion check so a
- * reduced-motion visitor gets the static poster frame instead of a moving
- * video (the attribute is added post-mount rather than toggled via
- * play()/pause() so it never briefly autoplays first).
+ * ── The reduced-motion gate is CSS, not JavaScript, and that is the point ──
+ *
+ * This used to hold a `canAnimate` state that started false, flipped in a
+ * mount effect, and gated BOTH the `autoplay` attribute and the `<source>`
+ * child (remounting the element through a changing `key`). The intent was
+ * good — a reduced-motion visitor must never see even a frame of movement —
+ * but the cost was that the browser could not begin fetching the clip until
+ * React had hydrated. Measured on this machine: the element sat with no
+ * source for ~9 seconds, then acquired one at ~12.7s and started playing at
+ * ~13.5s. On the landing page that reads as "the video does not play".
+ *
+ * The `media` attribute on `<source>` expresses the same rule declaratively:
+ * the browser evaluates it while parsing the HTML, so the fetch starts
+ * immediately for everyone else, and a reduced-motion visitor simply never
+ * gets a source (networkState 3, poster only) with no frame of movement and
+ * no JavaScript involved.
+ *
+ * The effect below is now only a backstop — see its own note.
  */
 export default function HeroVideoBackground() {
-  const [canAnimate, setCanAnimate] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   // ── Nothing is applied to the footage any more ───────────────────────────
@@ -46,28 +59,39 @@ export default function HeroVideoBackground() {
   // footage being held down — which is why the wash and the filter are not
   // needed and must not be reintroduced.
 
+  // Backstop only — the markup below is what actually starts the video.
+  //
+  // Two things this still buys:
+  //
+  //  1. `v.muted = true`. React does not reliably reflect the `muted` prop
+  //     onto the DOM property, and Chrome's autoplay policy reads the
+  //     PROPERTY, not the attribute. An unmuted video is blocked outright.
+  //  2. A `play()` nudge for engines that decline the `autoplay` attribute
+  //     but allow a programmatic play on a muted element. `play()` returns a
+  //     promise and rejecting is a normal outcome here (no source on a
+  //     reduced-motion visitor, for one), so the rejection is swallowed.
   useEffect(() => {
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-    setCanAnimate(!mq.matches);
-    const sync = () => setCanAnimate(!mq.matches);
-    mq.addEventListener('change', sync);
-    return () => mq.removeEventListener('change', sync);
-  }, []);
-
-  // Belt-and-braces autoplay. The <source> is only added once `canAnimate`
-  // flips true, which remounts the element via its key — so the `autoplay`
-  // attribute has to win a second time, on an element that mounts mid-session
-  // rather than at page load. Some browsers decline that. `play()` is a
-  // promise; a rejection here is expected and not an error worth surfacing.
-  useEffect(() => {
-    if (!canAnimate) return;
     const v = videoRef.current;
     if (!v) return;
+
+    // If the engine ignored the `media` gate on <source>, enforce it here so
+    // a reduced-motion visitor still ends up on the poster.
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (mq.matches) {
+      v.pause();
+      return;
+    }
+
+    v.muted = true;
     const start = () => { void v.play().catch(() => {}); };
     start();
+    v.addEventListener('loadeddata', start);
     v.addEventListener('canplay', start);
-    return () => v.removeEventListener('canplay', start);
-  }, [canAnimate]);
+    return () => {
+      v.removeEventListener('loadeddata', start);
+      v.removeEventListener('canplay', start);
+    };
+  }, []);
 
   return (
     <div aria-hidden="true" className="absolute inset-0 overflow-hidden">
@@ -80,18 +104,30 @@ export default function HeroVideoBackground() {
         className="absolute inset-x-0 top-0 h-[52vh] max-h-[520px] sm:inset-0 sm:h-full sm:max-h-none"
         style={{ isolation: 'isolate' }}
       >
+        {/* Everything here is in the SERVER HTML — no `key`, no conditional
+            child, nothing waiting on hydration. The browser starts fetching
+            the clip while it is still parsing the page. */}
         <video
           ref={videoRef}
-          key={canAnimate ? 'live' : 'static'}
           poster="/videos/hero-bg-poster.jpg"
           muted
           loop
           playsInline
-          autoPlay={canAnimate}
+          autoPlay
           preload="auto"
           className="h-full w-full object-cover"
         >
-          {canAnimate && <source src="/videos/hero-bg.mp4" type="video/mp4" />}
+          {/* `media` is the reduced-motion gate, evaluated at parse time. A
+              visitor who asks for reduced motion matches nothing here, so the
+              element ends up with no source at all (networkState 3) and shows
+              the poster — no movement, no JavaScript. Engines that ignore the
+              attribute fall through to playing it, which is the safe way for
+              this to fail; the effect above catches that case. */}
+          <source
+            src="/videos/hero-bg.mp4"
+            type="video/mp4"
+            media="(prefers-reduced-motion: no-preference)"
+          />
         </video>
 
         {/* Functional scrim, and the ONLY overlay left. Not decoration: it
